@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Paso 5: Capa de IA{% endblock %}
+{% block page_title %}5. Capa de IA{% endblock %}
+{% block content %}
+<div class="bg-gray-950 p-6 rounded-xl border border-indigo-900/40 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="text-xs">
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Modelos de Aprendizaje Supervisado y Series Temporales</h3>
+        <p class="text-gray-400 mt-1">Cálculo automatizado de tendencias predictivas, detección de anomalías de mercado y alertas de alzas significativas.</p>
+    </div>
+    <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+        <button onclick="correrIA()" class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-xs font-bold uppercase text-white rounded-lg transition shadow-md tracking-wider">
+            <i data-lucide="cpu" class="w-4 h-4"></i> Ejecutar Algoritmos de IA
+        </button>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+    <div class="bg-gray-950 p-4 rounded-xl border border-indigo-900/50">
+        <span class="text-[10px] text-gray-400 font-bold block">Precio Promedio Futuro</span>
+        <strong class="block mt-2 text-xl text-indigo-400">S/ {{ "%.2f"|format(resumen.precio_promedio_futuro or 0) }}</strong>
+    </div>
+    <div class="bg-gray-950 p-4 rounded-xl border border-emerald-900/50">
+        <span class="text-[10px] text-gray-400 font-bold block">Tendencia de Variación de Precios</span>
+        <strong class="block mt-2 text-xl text-emerald-400">S/ {{ "%.2f"|format(resumen.tendencia_variacion or 0) }}</strong>
+    </div>
+    <div class="bg-gray-950 p-4 rounded-xl border border-orange-900/50">
+        <span class="text-[10px] text-gray-400 font-bold block">Producto con Mayor Incremento Esperado</span>
+        <strong class="block mt-2 text-base text-orange-400">{{ resumen.producto_mayor_incremento or 'Sin datos' }}</strong>
+    </div>
+    <div class="bg-gray-950 p-4 rounded-xl border border-purple-900/50">
+        <span class="text-[10px] text-gray-400 font-bold block">Diferencia Mayorista vs Minorista Futura</span>
+        <strong class="block mt-2 text-xl text-purple-400">S/ {{ "%.2f"|format(resumen.diferencia_futura_canales or 0) }}</strong>
+    </div>
+</div>
+
+<div class="bg-gray-950 rounded-xl border border-gray-800 overflow-hidden shadow-lg">
+    <div class="p-4 bg-gray-950 border-b border-gray-800 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-white">Output de Predicciones Generadas (Inferencia Local)</h4>
+    </div>
+    <div class="overflow-x-auto max-h-96 text-xs pr-1">
+        <table class="w-full text-left">
+            <thead class="bg-gray-900 text-gray-400 sticky top-0 z-10">
+                <tr>
+                    <th class="p-3 rounded-l-lg">Producto Evaluado</th>
+                    <th class="p-3 text-right">Precio Base Actual</th>
+                    <th class="p-3 text-right">Predicción a 8 Semanas</th>
+                    <th class="p-3 text-center">Clasificación Alerta</th>
+                    <th class="p-3 text-center rounded-r-lg">Métrica Confianza ($R^2$)</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-900 text-gray-300">
+                {% for row in data %}
+                <tr class="hover:bg-gray-900/30 transition">
+                    <td class="p-3 font-semibold text-white">{{ row.producto }}</td>
+                    <td class="p-3 text-right font-mono text-gray-400">S/ {{ "%.2f"|format(row.precio_actual|float) }}</td>
+                    <td class="p-3 text-right font-mono text-indigo-400 font-bold">S/ {{ "%.2f"|format(row.precio_predicho|float) }}</td>
+                    <td class="p-3 text-center">
+                        <span class="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider
+                                     {% if row.alerta != 'Estable' and row.alerta != 'Normal' %}bg-rose-950 text-rose-400 border border-rose-900/50{% else %}bg-gray-900 text-gray-400 border border-gray-800{% endif %}">
+                            {{ row.alerta }}
+                        </span>
+                    </td>
+                    <td class="p-3 text-center font-mono font-semibold text-emerald-400">{{ row.confianza }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="p-12 text-center text-gray-600 italic">
+                        Ejecute los algoritmos analíticos para compilar y ajustar los modelos predictivos en el servidor Python.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="flex justify-end mt-6">
+    <a href="/kpis" class="w-full sm:w-auto text-center px-5 py-2.5 bg-yellow-600 hover:bg-yellow-700 text-xs font-bold uppercase text-gray-950 rounded-lg transition shadow-md tracking-wider">
+        Ir a Capa Semántica (KPIs) &rarr;
+    </a>
+</div>
+
+<script>
+function correrIA() {
+    fetch('/entrenar_ia', { method: 'POST' })
+    .then(res => res.json())
+    .then(d => {
+        alert(d.msg);
+        if (d.success) {
+            window.location.reload();
+        }
+    });
+}
+
+// Reactivación manual de vectores Lucide
+if (window.lucide) {
+    lucide.createIcons();
+}
+</script>
+{% endblock %}

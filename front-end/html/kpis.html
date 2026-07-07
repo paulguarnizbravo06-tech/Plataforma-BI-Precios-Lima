@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block title %}Paso 6: Capa Semántica & Reglas de Negocio{% endblock %}
+{% block page_title %}6. Capa Semántica & KPIs{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6 text-xs">
+
+    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h3 class="text-white font-bold text-[13px] uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="database" class="text-yellow-500 w-4 h-4"></i> Servidor Conectado: SQL Server (BI_MERCADOS_LIMA_F)
+            </h3>
+            <p class="text-gray-400 mt-1">Estructuración lógica, reglas de integridad y gobernanza del diccionario de datos antes de alimentar la capa visual.</p>
+        </div>
+        <button id="btnCompilar" onclick="compilarCapaSemantica()" class="bg-yellow-600 hover:bg-yellow-500 text-gray-950 font-bold px-4 py-2 rounded flex items-center gap-2 transition duration-200">
+            <i data-lucide="cpu" class="w-4 h-4"></i> Compilar Catálogo Semántico
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <div class="bg-gray-950 p-5 rounded-xl border border-gray-800 flex flex-col justify-between gap-4">
+            <div class="flex justify-between items-start border-b border-gray-900 pb-3">
+                <div>
+                    <span class="text-gray-500 font-mono text-[10px] block">MEDIDA DAX [01]</span>
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wide">[Precio Promedio General]</h4>
+                </div>
+                <div class="px-2 py-1 bg-blue-950/40 border border-blue-900 text-blue-400 rounded text-[10px] font-mono">AVERAGE</div>
+            </div>
+
+            <div class="py-2">
+                <p class="text-gray-400 mb-1">Promedio aritmético del precio de análisis registrado.</p>
+                <code class="block bg-gray-900 p-2 rounded text-blue-300 font-mono text-[11px] overflow-x-auto">Precio Promedio = AVERAGE(FACT_PRECIOS[precio_prom])</code>
+            </div>
+
+            <div class="bg-gray-900/40 p-3 rounded-lg border border-gray-900 flex justify-between items-center">
+                <span class="text-gray-500 font-medium">Valor Calculado Actual:</span>
+                <span class="text-xl font-black text-white font-mono">
+                    {% if kpis.precio_promedio_general %}S/ {{ "%.2f"|format(kpis.precio_promedio_general) }}{% else %}S/ 0.00{% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="bg-gray-950 p-5 rounded-xl border border-gray-800 flex flex-col justify-between gap-4">
+            <div class="flex justify-between items-start border-b border-gray-900 pb-3">
+                <div>
+                    <span class="text-gray-500 font-mono text-[10px] block">MEDIDA DAX [02]</span>
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wide">[Precio Máximo Registrado]</h4>
+                </div>
+                <div class="px-2 py-1 bg-emerald-950/40 border border-emerald-900 text-emerald-400 rounded text-[10px] font-mono">MAX</div>
+            </div>
+
+            <div class="py-2">
+                <p class="text-gray-400 mb-1">Mayor precio observado dentro del conjunto validado.</p>
+                <code class="block bg-gray-900 p-2 rounded text-emerald-300 font-mono text-[11px] overflow-x-auto">Precio Máximo = MAX(FACT_PRECIOS[precio_max])</code>
+            </div>
+
+            <div class="bg-gray-900/40 p-3 rounded-lg border border-gray-900 flex justify-between items-center">
+                <span class="text-gray-500 font-medium">Valor Calculado Actual:</span>
+                <span class="text-xl font-black text-emerald-400 font-mono">
+                    {% if kpis.precio_maximo_registrado %}S/ {{ "%.2f"|format(kpis.precio_maximo_registrado) }}{% else %}S/ 0.00{% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="bg-gray-950 p-5 rounded-xl border border-gray-800 flex flex-col justify-between gap-4">
+            <div class="flex justify-between items-start border-b border-gray-900 pb-3">
+                <div>
+                    <span class="text-gray-500 font-mono text-[10px] block">MEDIDA DAX [03]</span>
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wide">[Precio Mínimo Registrado]</h4>
+                </div>
+                <div class="px-2 py-1 bg-purple-950/40 border border-purple-900 text-purple-400 rounded text-[10px] font-mono">MIN</div>
+            </div>
+
+            <div class="py-2">
+                <p class="text-gray-400 mb-1">Menor precio observado dentro del conjunto validado.</p>
+                <code class="block bg-gray-900 p-2 rounded text-purple-300 font-mono text-[11px] overflow-x-auto">Precio Mínimo = MIN(FACT_PRECIOS[precio_min])</code>
+            </div>
+
+            <div class="bg-gray-900/40 p-3 rounded-lg border border-gray-900 flex justify-between items-center">
+                <span class="text-gray-500 font-medium">Valor Calculado Actual:</span>
+                <span class="text-xl font-black text-white font-mono">
+                    {% if kpis.precio_minimo_registrado %}S/ {{ "%.2f"|format(kpis.precio_minimo_registrado) }}{% else %}S/ 0.00{% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="bg-gray-950 p-5 rounded-xl border border-gray-800 flex flex-col justify-between gap-4">
+            <div class="flex justify-between items-start border-b border-gray-900 pb-3">
+                <div>
+                    <span class="text-gray-500 font-mono text-[10px] block">MEDIDA DAX [04]</span>
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wide">[Variación Promedio]</h4>
+                </div>
+                <div class="px-2 py-1 bg-orange-950/40 border border-orange-900 text-orange-400 rounded text-[10px] font-mono">AVERAGE</div>
+            </div>
+
+            <div class="py-2">
+                <p class="text-gray-400 mb-1">Promedio del rango observado: precio maximo menos precio minimo.</p>
+                <code class="block bg-gray-900 p-2 rounded text-orange-300 font-mono text-[11px] overflow-x-auto">Variacion Promedio = AVERAGE(FACT_PRECIOS[precio_max] - FACT_PRECIOS[precio_min])</code>
+            </div>
+
+            <div class="bg-gray-900/40 p-3 rounded-lg border border-gray-900 flex justify-between items-center">
+                <span class="text-gray-500 font-medium">Valor Calculado Actual:</span>
+                <span class="text-xl font-black text-orange-400 font-mono">
+                    {% if kpis.variacion_promedio %}S/ {{ "%.2f"|format(kpis.variacion_promedio) }}{% else %}S/ 0.00{% endif %}
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="flex justify-end mt-4">
+        <a href="/dashboard" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2.5 rounded-lg flex items-center gap-2 shadow-md transition duration-200">
+            Desplegar Visualización BI Final <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+    </div>
+</div>
+
+<script>
+function compilarCapaSemantica() {
+    const btn = document.getElementById('btnCompilar');
+    if(btn) btn.disabled = true;
+
+    fetch('/generar_capa_semantica', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                alert("✓ " + data.msg);
+                window.location.reload();
+            } else {
+                alert("Error: " + data.msg);
+                if(btn) btn.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error de red al compilar la capa.");
+            if(btn) btn.disabled = false;
+        });
+}
+</script>
+{% endblock %}

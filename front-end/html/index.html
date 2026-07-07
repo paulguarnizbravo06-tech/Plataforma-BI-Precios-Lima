@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Monitor General - BI Pipeline{% endblock %}
+{% block page_title %}{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+
+    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800/80 hover:border-blue-800 transition flex flex-col justify-between shadow-md">
+        <div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[11px] font-bold px-2.5 py-0.5 bg-blue-950 text-blue-400 border border-blue-900 rounded">Paso 1</span>
+                <span class="text-[11px] text-gray-500 font-medium">Fuentes de Datos</span>
+            </div>
+            <h4 class="font-bold text-sm text-white mb-1">Fuentes de Datos</h4>
+            <p class="text-xs text-gray-400">Estado: <span class="text-white font-medium">{{ status.fuentes.estado }}</span></p>
+        </div>
+        <div class="mt-4 pt-2 border-t border-gray-900 text-[11px] text-gray-500 flex justify-between items-center">
+            <span>Registros Crudos: <strong class="text-blue-400">{{ status.fuentes.registros }}</strong></span>
+            <a href="/fuentes" class="text-blue-500 hover:underline text-[10px]">Cargar &rarr;</a>
+        </div>
+    </div>
+
+    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800/80 hover:border-purple-800 transition flex flex-col justify-between shadow-md">
+        <div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[11px] font-bold px-2.5 py-0.5 bg-purple-950 text-purple-400 border border-purple-900 rounded">Paso 2</span>
+                <span class="text-[11px] text-gray-500 font-medium">Staging Area</span>
+            </div>
+            <h4 class="font-bold text-sm text-white mb-1">Staging Area</h4>
+            <p class="text-xs text-gray-400">Fase: <span class="text-purple-400 font-medium">{{ status.staging.estado }}</span></p>
+        </div>
+        <div class="mt-4 pt-2 border-t border-gray-900 text-[11px] text-gray-500 flex justify-between items-center">
+            <span>Errores Aislados: <strong class="text-rose-400">{{ status.staging.errores }}</strong></span>
+            <a href="/staging" class="text-purple-500 hover:underline text-[10px]">Validar &rarr;</a>
+        </div>
+    </div>
+
+    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800/80 hover:border-emerald-800 transition flex flex-col justify-between shadow-md">
+        <div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[11px] font-bold px-2.5 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-900 rounded">Paso 3</span>
+                <span class="text-[11px] text-gray-500 font-medium">Proceso ETL</span>
+            </div>
+            <h4 class="font-bold text-sm text-white mb-1">Proceso ETL</h4>
+            <p class="text-xs text-gray-400">Cálculos: <span class="text-emerald-400 font-medium">{{ status.etl.estado }}</span></p>
+        </div>
+        <div class="mt-4 pt-2 border-t border-gray-900 text-[11px] text-gray-500 flex justify-between items-center">
+            <span class="text-gray-400">Transformación Base</span>
+            <a href="/etl_page" class="text-emerald-500 hover:underline text-[10px]">Procesar &rarr;</a>
+        </div>
+    </div>
+
+    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800/80 hover:border-amber-800 transition flex flex-col justify-between shadow-md">
+        <div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[11px] font-bold px-2.5 py-0.5 bg-amber-950 text-amber-400 border border-amber-900 rounded">Paso 4</span>
+                <span class="text-[11px] text-gray-500 font-medium">Data Warehouse</span>
+            </div>
+            <h4 class="font-bold text-sm text-white mb-1">Data Warehouse</h4>
+            <p class="text-xs text-gray-400">Tabla Hechos: <span class="text-amber-400 font-medium">{{ status.dw.estado }}</span></p>
+        </div>
+        <div class="mt-4 pt-2 border-t border-gray-900 text-[11px] text-gray-500 flex justify-between items-center">
+            <span>Almacenados: <strong class="text-amber-400">{{ status.dw.registros }} filas</strong></span>
+            <a href="/dw" class="text-amber-500 hover:underline text-[10px]">Estructura &rarr;</a>
+        </div>
+    </div>
+
+    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800/80 hover:border-indigo-800 transition flex flex-col justify-between shadow-md">
+        <div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[11px] font-bold px-2.5 py-0.5 bg-indigo-950 text-indigo-400 border border-indigo-900 rounded">Paso 5</span>
+                <span class="text-[11px] text-gray-500 font-medium">Capa de IA</span>
+            </div>
+            <h4 class="font-bold text-sm text-white mb-1">Capa de IA</h4>
+            <p class="text-xs text-gray-400">Predicción: <span class="text-indigo-400 font-medium">{{ status.ia.estado }}</span></p>
+        </div>
+        <div class="mt-4 pt-2 border-t border-gray-900 text-[11px] text-gray-500 flex justify-between items-center">
+            <span>Algoritmos: <strong class="text-white">{{ status.ia.modelos|length }} Activos</strong></span>
+            <a href="/ia" class="text-indigo-500 hover:underline text-[10px]">Predecir &rarr;</a>
+        </div>
+    </div>
+
+    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800/80 hover:border-yellow-700 transition flex flex-col justify-between shadow-md">
+        <div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[11px] font-bold px-2.5 py-0.5 bg-yellow-950 text-yellow-500 border border-yellow-900 rounded">Paso 6</span>
+                <span class="text-[11px] text-gray-500 font-medium">Capa Semántica & KPIs</span>
+            </div>
+            <h4 class="font-bold text-sm text-white mb-1">Capa Semántica & KPIs</h4>
+            <p class="text-xs text-gray-400">Catálogo: <span class="text-yellow-500 font-medium">{{ status.kpis.estado }}</span></p>
+        </div>
+        <div class="mt-4 pt-2 border-t border-gray-900 text-[11px] text-gray-500 flex justify-between items-center">
+            <span>Medidas de Negocio: <strong class="text-white">{{ status.kpis.medidas_dax }}</strong></span>
+            <a href="/kpis" class="text-yellow-500 hover:underline text-[10px]">Compilar &rarr;</a>
+        </div>
+    </div>
+
+    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800/80 hover:border-pink-800 transition flex flex-col justify-between shadow-md">
+        <div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[11px] font-bold px-2.5 py-0.5 bg-pink-950 text-pink-400 border border-pink-900 rounded">Paso 7</span>
+                <span class="text-[11px] text-gray-500 font-medium">Visualizacion BI</span>
+            </div>
+            <h4 class="font-bold text-sm text-white mb-1">Visualizacion BI</h4>
+            <p class="text-xs text-gray-400">Paneles: <span class="text-pink-400 font-medium">{{ status.dashboard.estado }}</span></p>
+        </div>
+        <div class="mt-4 pt-2 border-t border-gray-900 text-[11px] text-gray-500 flex justify-between items-center">
+            <span>Visualización final</span>
+            <a href="/dashboard" class="text-pink-500 hover:underline text-[10px]">Ver &rarr;</a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

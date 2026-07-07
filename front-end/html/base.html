@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BI Pipeline Manager{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body:not(.theme-light) {
+            background: #07111f !important;
+            color: #f8fafc !important;
+        }
+
+        body:not(.theme-light) main {
+            background-color: #07111f !important;
+        }
+
+        body:not(.theme-light) .bg-gray-950 {
+            background-color: #081526 !important;
+        }
+
+        body:not(.theme-light) .bg-gray-900,
+        body:not(.theme-light) [class~="bg-gray-900/70"],
+        body:not(.theme-light) [class~="bg-gray-900/60"],
+        body:not(.theme-light) [class~="bg-gray-900/40"],
+        body:not(.theme-light) [class~="bg-gray-900/30"] {
+            background-color: #0d1b2f !important;
+        }
+
+        body:not(.theme-light) .bg-gray-800 {
+            background-color: #13243b !important;
+        }
+
+        body:not(.theme-light) .border-gray-900,
+        body:not(.theme-light) .border-gray-800,
+        body:not(.theme-light) .border-gray-700,
+        body:not(.theme-light) [class~="border-gray-800/80"],
+        body:not(.theme-light) [class~="border-gray-800/70"],
+        body:not(.theme-light) [class~="border-gray-800/60"] {
+            border-color: #1f3b5d !important;
+        }
+
+        body:not(.theme-light) header {
+            background-color: rgba(8, 21, 38, .92) !important;
+            border-color: #1f3b5d !important;
+        }
+
+        body:not(.theme-light) .hover\:bg-gray-800:hover,
+        body:not(.theme-light) .hover\:bg-gray-900:hover,
+        body:not(.theme-light) [class~="hover:bg-gray-800"]:hover {
+            background-color: #173052 !important;
+        }
+
+        body:not(.theme-light) .shadow-md,
+        body:not(.theme-light) .shadow-lg,
+        body:not(.theme-light) .shadow-xl {
+            box-shadow: 0 18px 36px rgba(2, 6, 23, .45) !important;
+        }
+
+        body:not(.theme-light) .filter-panel {
+            background: linear-gradient(180deg, #0d2a4a, #0a1d34) !important;
+            border-color: #24527a !important;
+            color: #f8fafc !important;
+        }
+
+        body:not(.theme-light) .app-sidebar {
+            background: linear-gradient(180deg, #082f49, #0f172a 72%) !important;
+            border-color: #38bdf8 !important;
+        }
+
+        body:not(.theme-light) .app-sidebar a,
+        body:not(.theme-light) .app-sidebar nav,
+        body:not(.theme-light) .app-sidebar .text-gray-300 {
+            color: #e0f2fe !important;
+        }
+
+        body:not(.theme-light) .app-sidebar .text-gray-500 {
+            color: #93c5fd !important;
+        }
+
+        body:not(.theme-light) .app-sidebar a:hover {
+            background-color: rgba(14, 165, 233, .18) !important;
+            color: #ffffff !important;
+        }
+
+        .sidebar-logo-link {
+            background: transparent !important;
+            border-color: transparent !important;
+        }
+
+        .sidebar-logo-img {
+            filter: drop-shadow(0 14px 20px rgba(2, 6, 23, .34));
+        }
+
+        body.theme-light {
+            background: #eff6ff !important;
+            color: #111827 !important;
+        }
+
+        body.theme-light .bg-gray-950,
+        body.theme-light .bg-gray-900,
+        body.theme-light [class~="bg-gray-900/70"],
+        body.theme-light [class~="bg-gray-900/60"],
+        body.theme-light [class~="bg-gray-900/40"],
+        body.theme-light [class~="bg-gray-900/30"],
+        body.theme-light [class~="bg-gray-800"] {
+            background-color: #ffffff !important;
+        }
+
+        body.theme-light main {
+            background-color: #eff6ff !important;
+        }
+
+        body.theme-light [class~="bg-gray-950/30"],
+        body.theme-light [class~="bg-gray-950/40"],
+        body.theme-light [class~="bg-gray-950/50"] {
+            background-color: rgba(239, 246, 255, .88) !important;
+        }
+
+        body.theme-light .border-gray-900,
+        body.theme-light .border-gray-800,
+        body.theme-light .border-gray-700,
+        body.theme-light [class~="border-gray-800/80"],
+        body.theme-light [class~="border-gray-800/70"],
+        body.theme-light [class~="border-gray-800/60"] {
+            border-color: #bfdbfe !important;
+        }
+
+        body.theme-light .text-white,
+        body.theme-light .text-gray-100,
+        body.theme-light .text-gray-300 {
+            color: #111827 !important;
+        }
+
+        body.theme-light .text-gray-400,
+        body.theme-light .text-gray-500,
+        body.theme-light .text-gray-600 {
+            color: #4b5563 !important;
+        }
+
+        body.theme-light .hover\:bg-gray-800:hover,
+        body.theme-light .hover\:bg-gray-900:hover,
+        body.theme-light [class~="hover:bg-gray-800"]:hover {
+            background-color: #dbeafe !important;
+        }
+
+        body.theme-light header {
+            background-color: rgba(255, 255, 255, .94) !important;
+            border-color: #bfdbfe !important;
+        }
+
+        body.theme-light table thead {
+            background-color: #dbeafe !important;
+        }
+
+        body.theme-light aside,
+        body.theme-light body > div:first-of-type {
+            background-color: #ffffff !important;
+            border-color: #bfdbfe !important;
+        }
+
+        body.theme-light .shadow-md,
+        body.theme-light .shadow-lg,
+        body.theme-light .shadow-xl {
+            box-shadow: 0 14px 32px rgba(37, 99, 235, .10) !important;
+        }
+
+        body.theme-light input,
+        body.theme-light select,
+        body.theme-light textarea {
+            background-color: #ffffff !important;
+            border-color: #93c5fd !important;
+            color: #111827 !important;
+        }
+
+        body.theme-light .bg-blue-700 {
+            background-color: #dbeafe !important;
+            border-color: #93c5fd !important;
+            color: #1e3a8a !important;
+        }
+
+        body.theme-light .filter-panel {
+            background: linear-gradient(180deg, #dbeafe, #bfdbfe) !important;
+            border-color: #93c5fd !important;
+            color: #1e3a8a !important;
+        }
+
+        body.theme-light .app-sidebar {
+            background: linear-gradient(180deg, #38bdf8, #2563eb) !important;
+            border-color: #1d4ed8 !important;
+        }
+
+        body.theme-light .app-sidebar a,
+        body.theme-light .app-sidebar nav,
+        body.theme-light .app-sidebar .text-gray-300,
+        body.theme-light .app-sidebar .text-gray-500 {
+            color: #ffffff !important;
+        }
+
+        body.theme-light .app-sidebar a:hover {
+            background-color: rgba(255, 255, 255, .18) !important;
+            color: #ffffff !important;
+        }
+
+        body.theme-light .sidebar-logo-img {
+            filter:
+                drop-shadow(0 12px 18px rgba(15, 23, 42, .26))
+                drop-shadow(0 0 1px rgba(15, 23, 42, .65));
+        }
+
+        body.theme-light .app-sidebar [class*="bg-blue-900"],
+        body.theme-light .app-sidebar [class*="bg-purple-900"],
+        body.theme-light .app-sidebar [class*="bg-emerald-900"],
+        body.theme-light .app-sidebar [class*="bg-amber-900"],
+        body.theme-light .app-sidebar [class*="bg-indigo-900"],
+        body.theme-light .app-sidebar [class*="bg-yellow-900"],
+        body.theme-light .app-sidebar [class*="bg-pink-900"] {
+            background-color: rgba(255, 255, 255, .22) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, .24) !important;
+        }
+
+        body.theme-light .text-blue-300,
+        body.theme-light .text-blue-400 {
+            color: #1d4ed8 !important;
+        }
+
+        body.theme-light .text-purple-300,
+        body.theme-light .text-purple-400 {
+            color: #7e22ce !important;
+        }
+
+        body.theme-light .text-emerald-300,
+        body.theme-light .text-emerald-400 {
+            color: #047857 !important;
+        }
+
+        body.theme-light .text-amber-300,
+        body.theme-light .text-amber-400,
+        body.theme-light .text-yellow-300,
+        body.theme-light .text-yellow-400 {
+            color: #b45309 !important;
+        }
+
+        body.theme-light .text-cyan-300,
+        body.theme-light .text-cyan-400 {
+            color: #0e7490 !important;
+        }
+
+        body.theme-light .text-slate-300,
+        body.theme-light .text-slate-400 {
+            color: #475569 !important;
+        }
+
+        body.theme-light .text-indigo-300,
+        body.theme-light .text-indigo-400 {
+            color: #4338ca !important;
+        }
+
+        body.theme-light .text-pink-300,
+        body.theme-light .text-pink-400 {
+            color: #be185d !important;
+        }
+
+        body.theme-light .app-sidebar a,
+        body.theme-light .app-sidebar nav,
+        body.theme-light .app-sidebar .text-gray-300,
+        body.theme-light .app-sidebar .text-gray-500,
+        body.theme-light .app-sidebar [class*="text-blue-"],
+        body.theme-light .app-sidebar [class*="text-purple-"],
+        body.theme-light .app-sidebar [class*="text-emerald-"],
+        body.theme-light .app-sidebar [class*="text-amber-"],
+        body.theme-light .app-sidebar [class*="text-indigo-"],
+        body.theme-light .app-sidebar [class*="text-yellow-"],
+        body.theme-light .app-sidebar [class*="text-pink-"] {
+            color: #ffffff !important;
+        }
+
+        body:not(.theme-light) .app-sidebar [class*="bg-blue-900"],
+        body:not(.theme-light) .app-sidebar [class*="bg-purple-900"],
+        body:not(.theme-light) .app-sidebar [class*="bg-emerald-900"],
+        body:not(.theme-light) .app-sidebar [class*="bg-amber-900"],
+        body:not(.theme-light) .app-sidebar [class*="bg-indigo-900"],
+        body:not(.theme-light) .app-sidebar [class*="bg-yellow-900"],
+        body:not(.theme-light) .app-sidebar [class*="bg-pink-900"] {
+            background-color: rgba(14, 165, 233, .18) !important;
+            color: #bae6fd !important;
+            border: 1px solid rgba(56, 189, 248, .24) !important;
+        }
+
+        body.theme-light .bg-blue-900\/40,
+        body.theme-light .bg-blue-950\/20,
+        body.theme-light .bg-blue-950\/30,
+        body.theme-light .bg-blue-950\/50 {
+            background-color: rgba(191, 219, 254, .75) !important;
+        }
+
+        body.theme-light .dw-canvas {
+            background:
+                radial-gradient(circle at 50% 42%, rgba(59, 130, 246, 0.12), transparent 32%),
+                linear-gradient(135deg, #ffffff, #dbeafe) !important;
+        }
+
+        body.theme-light .dw-table {
+            background: rgba(255, 255, 255, .96) !important;
+            box-shadow: 0 16px 32px rgba(15, 23, 42, .12) !important;
+            color: #0f172a !important;
+        }
+
+        body.theme-light .dw-table.fact {
+            background: rgba(255, 247, 237, .98) !important;
+        }
+
+        body.theme-light .dw-title {
+            border-bottom-color: rgba(15, 23, 42, .14) !important;
+        }
+
+        body.theme-light .dw-fields {
+            color: #334155 !important;
+        }
+
+        body.theme-light .dw-key.text-gray-600 {
+            color: #475569 !important;
+        }
+
+        body.theme-light .dw-badge {
+            background-color: rgba(255, 255, 255, .76) !important;
+        }
+
+        body.theme-light .rel-label {
+            background: #ffffff !important;
+            color: #92400e !important;
+            border-color: rgba(180, 83, 9, .42) !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 flex h-screen font-sans overflow-hidden">
+
+    <div class="app-sidebar w-72 bg-gray-950 border-r border-gray-800 flex flex-col justify-between flex-shrink-0">
+        <div class="p-5 overflow-y-auto flex-1">
+            <div class="mb-7">
+                <a href="/" class="sidebar-logo-link block px-4 py-2 transition">
+                    <img src="{{ url_for('img_files', filename='logo.png') }}" alt="Logo Monitoreo de Precios" class="sidebar-logo-img w-full max-h-36 object-contain mx-auto">
+                </a>
+            </div>
+
+            <nav class="space-y-1">
+                <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition text-gray-300 hover:text-white">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Pantalla General
+                </a>
+                <div class="pt-4 pb-2 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">7 Pasos del Flujo BI</div>
+
+                <a href="/fuentes" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition text-gray-300 hover:text-white">
+                    <span class="w-6 h-6 rounded-full bg-blue-900/50 text-blue-300 text-xs flex items-center justify-center font-bold">1</span> Fuentes de Datos
+                </a>
+                <a href="/staging" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition text-gray-300 hover:text-white">
+                    <span class="w-6 h-6 rounded-full bg-purple-900/50 text-purple-300 text-xs flex items-center justify-center font-bold">2</span> Staging Area
+                </a>
+                <a href="/etl_page" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition text-gray-300 hover:text-white">
+                    <span class="w-6 h-6 rounded-full bg-emerald-900/50 text-emerald-300 text-xs flex items-center justify-center font-bold">3</span> Proceso ETL
+                </a>
+                <a href="/dw" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition text-gray-300 hover:text-white">
+                    <span class="w-6 h-6 rounded-full bg-amber-900/50 text-amber-300 text-xs flex items-center justify-center font-bold">4</span> Data Warehouse
+                </a>
+                <a href="/ia" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition text-gray-300 hover:text-white">
+                    <span class="w-6 h-6 rounded-full bg-indigo-900/50 text-indigo-300 text-xs flex items-center justify-center font-bold">5</span> Capa de IA
+                </a>
+                <a href="/kpis" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition text-gray-300 hover:text-white">
+                    <span class="w-6 h-6 rounded-full bg-yellow-900/50 text-yellow-300 text-xs flex items-center justify-center font-bold">6</span> Capa Semántica & KPIs
+                </a>
+                <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition text-gray-300 hover:text-white">
+                    <span class="w-6 h-6 rounded-full bg-pink-900/50 text-pink-300 text-xs flex items-center justify-center font-bold">7</span> Visualizacion BI
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="border-b border-gray-800 bg-gray-900/70 backdrop-blur px-8 py-4 flex-shrink-0">
+            <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
+                <div class="min-w-0">
+                    <h2 class="text-xl md:text-2xl font-black text-white uppercase tracking-wide leading-tight">
+                        PLATAFORMA BI INTEGRADA - MONITOREO DE PRECIOS EN MERCADOS DE LIMA
+                    </h2>
+                    <p class="mt-1 text-xs md:text-sm text-gray-400">
+                        Arquitectura End-to-End: Desde la captura de datos hasta la analítica predictiva y visualización ejecutiva
+                    </p>
+                    <p class="mt-2 text-xs font-semibold text-emerald-400 uppercase tracking-wider">{% block page_title %}{% endblock %}</p>
+                </div>
+                <div class="ml-auto flex flex-wrap items-center justify-end gap-2">
+                    <button id="themeToggle" type="button" aria-label="Cambiar tema" title="Cambiar tema" class="flex h-10 w-10 items-center justify-center bg-gray-800 hover:bg-gray-700 rounded-full border border-gray-700 font-semibold">
+                        <i id="themeIconMoon" data-lucide="moon" class="w-4 h-4"></i>
+                        <i id="themeIconSun" data-lucide="sun" class="hidden w-4 h-4"></i>
+                    </button>
+                    <div class="flex items-center gap-2 text-xs bg-gray-800 px-3 py-1.5 rounded-full border border-gray-700 w-fit">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Servidor Conectado: SQL Server
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6 md:p-8">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIconMoon = document.getElementById('themeIconMoon');
+        const themeIconSun = document.getElementById('themeIconSun');
+
+        function aplicarTema(theme) {
+            const isLight = theme === 'light';
+            document.body.classList.toggle('theme-light', isLight);
+            if (themeToggle) {
+                themeToggle.setAttribute('aria-label', isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+                themeToggle.setAttribute('title', isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+            }
+            if (themeIconMoon && themeIconSun) {
+                themeIconMoon.classList.toggle('hidden', isLight);
+                themeIconSun.classList.toggle('hidden', !isLight);
+            }
+            localStorage.setItem('bi-theme', theme);
+        }
+
+        const temaInicial = localStorage.getItem('bi-theme') || 'dark';
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+        aplicarTema(temaInicial);
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                aplicarTema(document.body.classList.contains('theme-light') ? 'dark' : 'light');
+            });
+        }
+    </script>
+</body>
+</html>

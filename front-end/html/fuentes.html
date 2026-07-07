@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Paso 1: Fuentes de Datos{% endblock %}
+{% block page_title %}1. Fuentes de Datos{% endblock %}
+{% block content %}
+<div class="bg-gray-950 p-6 rounded-xl border border-gray-800 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="p-3 bg-gray-900 rounded-lg border border-gray-800/60 flex items-center gap-3">
+            <div class="p-2 rounded-lg bg-blue-950/50 border border-blue-900/30 text-blue-400">
+                <i data-lucide="building-2" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <div class="text-xs font-bold text-white">SISAP</div>
+                <div class="text-[10px] text-gray-500">Mayoristas y Minoristas</div>
+            </div>
+        </div>
+        <div class="p-3 bg-gray-900 rounded-lg border border-gray-800/60 flex items-center gap-3">
+            <div class="p-2 rounded-lg bg-emerald-950/50 border border-emerald-900/30 text-emerald-400">
+                <i data-lucide="landmark" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <div class="text-xs font-bold text-white">MIDAGRI</div>
+                <div class="text-[10px] text-gray-500">Reportes de Mercados</div>
+            </div>
+        </div>
+        <div class="p-3 bg-gray-900 rounded-lg border border-gray-800/60 flex items-center gap-3">
+            <div class="p-2 rounded-lg bg-pink-950/50 border border-pink-900/30 text-pink-400">
+                <i data-lucide="smartphone" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <div class="text-xs font-bold text-white">App Mi Caserita</div>
+                <div class="text-[10px] text-gray-500">Precios Consumidor Final</div>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+        <div class="flex-1 w-full">
+            <label class="block text-xs font-semibold text-gray-400 mb-1.5">Seleccionar Dataset de Entrada (Excel / CSV)</label>
+            <label id="dropZone" for="archivo"
+                   class="flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-blue-800/70 bg-gray-900/70 px-4 py-5 text-center transition hover:border-blue-500 hover:bg-blue-950/20">
+                <i data-lucide="upload-cloud" class="mb-2 h-7 w-7 text-blue-400"></i>
+                <span class="text-xs font-bold uppercase tracking-wider text-white">Elegir o arrastrar archivo</span>
+                <span id="fileName" class="mt-1 text-[11px] text-gray-400">Excel o CSV, máximo un dataset por carga</span>
+            </label>
+            <input id="archivo" type="file" name="archivo" accept=".xlsx, .xls, .csv" required class="sr-only">
+        </div>
+        <div>
+            <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-700 font-bold text-xs uppercase rounded-lg text-white transition shadow-md tracking-wider">
+                Ingestar Datos
+            </button>
+        </div>
+    </form>
+
+    {% if mensaje %}
+    <div class="mt-4 p-3 bg-blue-950/30 border border-blue-900 text-blue-400 rounded-lg text-xs font-semibold flex items-center gap-2">
+        <i data-lucide="info" class="w-4 h-4 flex-shrink-0"></i>
+        <span>{{ mensaje }}</span>
+    </div>
+    {% endif %}
+</div>
+
+{% if data %}
+<div class="bg-gray-950 rounded-xl border border-gray-800 overflow-hidden shadow-lg">
+    <div class="p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-gray-950">
+        <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> Raw Data (Estructura de Captura Inicial)
+        </h3>
+        <a href="/staging" class="w-full sm:w-auto text-center text-xs px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition shadow-md uppercase">
+            Pasar a Staging Area &rarr;
+        </a>
+    </div>
+    <div class="overflow-x-auto max-h-96 text-xs pr-1">
+        <table class="w-full text-left">
+            <thead class="bg-gray-900 text-gray-400 sticky top-0 z-10">
+                <tr>
+                    <th class="p-3 rounded-l-lg">Fecha</th>
+                    <th class="p-3">Producto</th>
+                    <th class="p-3 text-right">P. Mayorista</th>
+                    <th class="p-3 text-right">P. Minorista</th>
+                    <th class="p-3 text-center rounded-r-lg">Control de Calidad</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-900 text-gray-300">
+                {% for row in data %}
+                <tr class="hover:bg-gray-900/30 transition">
+                    <td class="p-3 font-mono text-gray-400">{{ row.fecha }}</td>
+                    <td class="p-3 font-semibold text-white">{{ row.producto }}</td>
+                    <td class="p-3 text-right font-mono">S/ {{ "%.2f"|format(row.precio_mayorista|float) }}</td>
+                    <td class="p-3 text-right font-mono text-blue-400">S/ {{ "%.2f"|format(row.precio_minorista|float) }}</td>
+                    <td class="p-3 text-center">
+                        <span class="px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase
+                                     {% if row.estado == 'OK' %}bg-emerald-950 text-emerald-400 border border-emerald-900/60{% else %}bg-rose-950 text-rose-400 border border-rose-900/60{% endif %}">
+                            {{ row.estado }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    const fileInput = document.getElementById('archivo');
+    const dropZone = document.getElementById('dropZone');
+    const fileName = document.getElementById('fileName');
+
+    function mostrarArchivo(file) {
+        fileName.textContent = file ? file.name : 'Excel o CSV, máximo un dataset por carga';
+    }
+
+    fileInput.addEventListener('change', () => {
+        mostrarArchivo(fileInput.files[0]);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, event => {
+            event.preventDefault();
+            dropZone.classList.add('border-blue-400', 'bg-blue-950/30');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, event => {
+            event.preventDefault();
+            dropZone.classList.remove('border-blue-400', 'bg-blue-950/30');
+        });
+    });
+
+    dropZone.addEventListener('drop', event => {
+        const file = event.dataTransfer.files[0];
+        if (!file) return;
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        fileInput.files = transfer.files;
+        mostrarArchivo(file);
+    });
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+</script>
+{% endblock %}

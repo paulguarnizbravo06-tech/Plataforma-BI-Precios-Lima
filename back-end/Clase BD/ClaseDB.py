@@ -1,78 +1,155 @@
 import numpy as np
 import pandas as pd
-import pyodbc
+import psycopg2
 
 
 class ClaseDB:
-    """Conexion y operaciones auxiliares para el Data Warehouse."""
+    """Conexión y operaciones auxiliares para Supabase PostgreSQL."""
 
     @staticmethod
-    def conectar_sql():
-        return pyodbc.connect(
-            "DRIVER={ODBC Driver 17 for SQL Server};"
-            "SERVER=DESKTOP-R32DQGB\\SQLEXPRESS;"
-            "DATABASE=BI_MERCADOS_LIMA_F;"
-            "Trusted_Connection=yes;"
-            "Encrypt=no;"
-            "TrustServerCertificate=yes;",
-            timeout=5
+    def conectar_db():
+        return psycopg2.connect(
+            host="db.xddokslbbzozptctpioe.supabase.co",
+            database="postgres",
+            user="postgres",
+            password="Guarniz2006@",
+            port=5432,
+            sslmode="require"
         )
 
     @staticmethod
     def sql_valor(v):
-        """Convierte NaN/NaT a None para que SQL Server reciba NULL."""
+        """Convierte NaN/NaT en NULL."""
         try:
             if pd.isna(v):
                 return None
         except Exception:
             pass
+
         if isinstance(v, float) and np.isnan(v):
             return None
+
         return v
 
     @staticmethod
     def obtener_o_crear_producto(cursor, producto):
+
         producto = (producto or "Sin producto").strip()
-        cursor.execute("SELECT id_producto FROM DIM_PRODUCTO WHERE producto = ?", producto)
+
+        cursor.execute(
+            """
+            SELECT id_producto
+            FROM dim_producto
+            WHERE producto=%s
+            """,
+            (producto,)
+        )
+
         row = cursor.fetchone()
+
         if row:
             return row[0]
-        cursor.execute("""
-            INSERT INTO DIM_PRODUCTO (producto)
-            OUTPUT INSERTED.id_producto
-            VALUES (?)
-        """, producto)
+
+        cursor.execute(
+            """
+            INSERT INTO dim_producto(producto)
+            VALUES(%s)
+            RETURNING id_producto
+            """,
+            (producto,)
+        )
+
         return cursor.fetchone()[0]
 
     @staticmethod
     def obtener_o_crear_tipo_venta(cursor, tipo_venta):
+
         tipo_venta = (tipo_venta or "No especificado").strip()
-        cursor.execute("SELECT id_tipo_venta FROM DIM_TIPO_VENTA WHERE tipo_venta = ?", tipo_venta)
+
+        cursor.execute(
+            """
+            SELECT id_tipo_venta
+            FROM dim_tipo_venta
+            WHERE tipo_venta=%s
+            """,
+            (tipo_venta,)
+        )
+
         row = cursor.fetchone()
+
         if row:
             return row[0]
-        cursor.execute("""
-            INSERT INTO DIM_TIPO_VENTA (tipo_venta)
-            OUTPUT INSERTED.id_tipo_venta
-            VALUES (?)
-        """, tipo_venta)
+
+        cursor.execute(
+            """
+            INSERT INTO dim_tipo_venta(tipo_venta)
+            VALUES(%s)
+            RETURNING id_tipo_venta
+            """,
+            (tipo_venta,)
+        )
+
         return cursor.fetchone()[0]
 
     @staticmethod
     def obtener_o_crear_unidad(cursor, unidad, equivalencia, id_tipo_venta):
+
         unidad = (unidad or "Sin unidad").strip()
         equivalencia = ClaseDB.sql_valor(equivalencia)
-        cursor.execute("""
+
+        cursor.execute(
+            """
             SELECT id_unidad
-            FROM DIM_UNIDAD
-            WHERE unidad = ? AND id_tipo_venta = ?
-        """, unidad, id_tipo_venta)
+            FROM dim_unidad
+            WHERE unidad=%s
+            AND id_tipo_venta=%s
+            """,
+            (unidad, id_tipo_venta)
+        )
+
         row = cursor.fetchone()
+
         if row:
             return row[0]
-        cursor.execute("""
-            INSERT INTO DIM_UNIDAD (unidad, equivalencia, id_tipo_venta)
-            OUTPUT INSERTED.id_unidad
-            VALUES (?, ?, ?)
-        """, unidad, equivalencia, id_tipo_venta)
+
+        cursor.execute(
+            """
+            INSERT INTO dim_unidad
+            (
+                unidad,
+                equivalencia,
+                id_tipo_venta
+            )
+            VALUES
+            (
+                %s,
+                %s,
+                %s
+            )
+            RETURNING id_unidad
+            """,
+            (
+                unidad,
+                equivalencia,
+                id_tipo_venta
+            )
+        )
+
         return cursor.fetchone()[0]
+
+    @staticmethod
+    def guardar(conn):
+        conn.commit()
+
+    @staticmethod
+    def rollback(conn):
+        conn.rollback()
+
+    @staticmethod
+    def cerrar(cursor=None, conn=None):
+
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()

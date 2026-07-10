@@ -28,12 +28,12 @@ GitHub -> Streamlit Community Cloud -> Supabase PostgreSQL
 BD/script_supabase_postgresql.sql
 ```
 
-4. Copiar la cadena de conexion PostgreSQL.
+4. En `Connection Method`, elegir `Transaction pooler` y copiar la cadena de conexion PostgreSQL.
 
-Formato recomendado para Streamlit:
+Formato recomendado para Streamlit Cloud:
 
 ```text
-postgresql+psycopg2://postgres:TU_PASSWORD@TU_HOST:5432/postgres?sslmode=require
+postgresql+psycopg2://postgres.xddokslbbzozptctpioe:TU_PASSWORD_ENCODED@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require
 ```
 
 ## 2. Streamlit Community Cloud
@@ -49,10 +49,10 @@ Main file path: streamlit_app.py
 4. En `Settings > Secrets`, agregar:
 
 ```toml
-DATABASE_URL = "postgresql+psycopg2://postgres:TU_PASSWORD@TU_HOST:5432/postgres?sslmode=require"
+DATABASE_URL = "postgresql+psycopg2://postgres.xddokslbbzozptctpioe:TU_PASSWORD_ENCODED@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require"
 ```
 
-5. Desplegar la app.
+5. Guardar secrets y hacer `Reboot app` o `Redeploy`.
 
 ## 3. Google Colab
 
@@ -74,3 +74,4 @@ analitica y ejecucion de scripts desde el repositorio.
 2. Validar Staging y ETL.
 3. Guardar el Data Warehouse en Supabase.
 4. Consultar KPIs, graficos y predicciones desde el dashboard web.
+

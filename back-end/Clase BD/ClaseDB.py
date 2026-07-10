@@ -9,11 +9,11 @@ class ClaseDB:
     @staticmethod
     def conectar_db():
         return psycopg2.connect(
-            host="db.xddokslbbzozptctpioe.supabase.co",
+            host="db.ksuuystvousnqdfxzwrx.supabase.co",
             database="postgres",
             user="postgres",
             password="Guarniz2006@",
-            port=5432,
+            port=6543,
             sslmode="require"
         )
 

@@ -21,6 +21,110 @@ MESES = [
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ]
 
+PASOS_FLUJO = [
+    ("Paso 1", "Fuentes de Datos", "Captura de archivos SISAP", "Registros crudos", "#38bdf8"),
+    ("Paso 2", "Staging Area", "Validacion y control de calidad", "Errores aislados", "#a78bfa"),
+    ("Paso 3", "Proceso ETL", "Limpieza y transformacion", "Transformacion base", "#34d399"),
+    ("Paso 4", "Data Warehouse", "Carga en Supabase PostgreSQL", "Modelo analitico", "#f59e0b"),
+    ("Paso 5", "Capa de IA", "Predicciones de precios", "Modelo lineal", "#818cf8"),
+    ("Paso 6", "Capa Semantica & KPIs", "Indicadores ejecutivos", "Medidas de negocio", "#facc15"),
+    ("Paso 7", "Visualizacion BI", "Dashboard final", "Panel ejecutivo", "#f472b6"),
+]
+
+
+def aplicar_estilos() -> None:
+    st.markdown(
+        """
+        <style>
+            .stApp { background: #07111f; color: #f8fafc; }
+            [data-testid="stSidebar"] {
+                background: linear-gradient(180deg, #082f49, #0f172a 72%);
+                border-right: 1px solid #38bdf8;
+            }
+            [data-testid="stSidebar"] * { color: #e0f2fe; }
+            [data-testid="stSidebar"] .stRadio label { padding: 6px 0; }
+            [data-testid="stHeader"] { background: rgba(7, 17, 31, .86); }
+            .block-container { padding-top: 1.4rem; max-width: 1500px; }
+            .bi-topbar {
+                border: 1px solid #1f3b5d;
+                background: #081526;
+                padding: 18px 22px;
+                margin-bottom: 22px;
+            }
+            .bi-topbar h1 {
+                color: #ffffff;
+                font-size: 26px;
+                line-height: 1.12;
+                margin: 0;
+                font-weight: 900;
+                letter-spacing: .02em;
+                text-transform: uppercase;
+            }
+            .bi-topbar p { color: #9ca3af; font-size: 13px; margin: 7px 0 0; }
+            .bi-cloud-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                border: 1px solid #1f3b5d;
+                background: #0d1b2f;
+                color: #dbeafe;
+                font-size: 12px;
+                font-weight: 700;
+                padding: 7px 10px;
+                margin-top: 12px;
+            }
+            .bi-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 999px;
+                background: #10b981;
+                display: inline-block;
+            }
+            .bi-step-card {
+                border: 1px solid #1f3b5d;
+                background: #071526;
+                padding: 15px 16px;
+                margin-bottom: 14px;
+                min-height: 132px;
+                box-shadow: 0 18px 36px rgba(2, 6, 23, .24);
+            }
+            .bi-step-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 12px;
+            }
+            .bi-step-badge {
+                display: inline-block;
+                font-size: 11px;
+                font-weight: 800;
+                padding: 3px 9px;
+                border: 1px solid currentColor;
+                background: rgba(15, 23, 42, .72);
+            }
+            .bi-step-kicker { color: #64748b; font-size: 11px; font-weight: 700; text-align: right; }
+            .bi-step-title { color: #ffffff; font-size: 15px; font-weight: 800; margin-bottom: 5px; }
+            .bi-step-detail { color: #94a3b8; font-size: 12px; min-height: 32px; }
+            .bi-step-foot {
+                border-top: 1px solid #13243b;
+                color: #64748b;
+                font-size: 11px;
+                margin-top: 13px;
+                padding-top: 8px;
+            }
+            div[data-testid="stMetric"] {
+                border: 1px solid #1f3b5d;
+                background: #081526;
+                padding: 12px 14px;
+            }
+            h2, h3 { color: #ffffff !important; }
+            .stDataFrame, div[data-testid="stPlotlyChart"] { border: 1px solid #1f3b5d; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
 
 def get_database_url() -> str | None:
     try:
@@ -269,32 +373,36 @@ def cargar_capa_semantica(engine) -> pd.DataFrame:
         return pd.DataFrame()
 
 
-st.title("Plataforma BI Precios Lima")
-st.caption("GitHub + Supabase PostgreSQL + Streamlit Community Cloud")
-pasos_flujo = [
-    ("Paso 1", "Fuentes de Datos", "Captura de archivos SISAP"),
-    ("Paso 2", "Staging Area", "Validacion y control de calidad"),
-    ("Paso 3", "Proceso ETL", "Transformacion de datos"),
-    ("Paso 4", "Data Warehouse", "Carga en Supabase PostgreSQL"),
-    ("Paso 5", "Capa de IA", "Predicciones de precios"),
-    ("Paso 6", "Capa Semantica & KPIs", "Indicadores ejecutivos"),
-    ("Paso 7", "Visualizacion BI", "Dashboard final"),
-]
+aplicar_estilos()
+
+st.markdown(
+    """
+    <div class="bi-topbar">
+        <h1>Plataforma BI Integrada - Monitoreo de Precios en Mercados de Lima</h1>
+        <p>Arquitectura cloud end-to-end: captura, staging, ETL, warehouse, analitica predictiva y visualizacion ejecutiva.</p>
+        <div class="bi-cloud-pill"><span class="bi-dot"></span> GitHub + Supabase PostgreSQL + Streamlit Community Cloud</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 cols = st.columns(4)
-for idx, (paso, titulo, detalle) in enumerate(pasos_flujo):
+for idx, (paso, titulo, detalle, estado, color) in enumerate(PASOS_FLUJO):
     with cols[idx % 4]:
         st.markdown(
             f"""
-            <div style="border:1px solid #d8dee9;border-radius:8px;padding:14px 16px;margin-bottom:12px;min-height:112px;background:#ffffff;">
-                <div style="font-size:12px;font-weight:700;color:#2563eb;">{paso}</div>
-                <div style="font-size:16px;font-weight:700;margin-top:8px;color:#111827;">{titulo}</div>
-                <div style="font-size:13px;margin-top:6px;color:#6b7280;">{detalle}</div>
+            <div class="bi-step-card">
+                <div class="bi-step-top">
+                    <span class="bi-step-badge" style="color:{color};">{paso}</span>
+                    <span class="bi-step-kicker">{titulo}</span>
+                </div>
+                <div class="bi-step-title">{titulo}</div>
+                <div class="bi-step-detail">{detalle}</div>
+                <div class="bi-step-foot"><span style="color:{color};font-weight:800;">{estado}</span></div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-
 database_url = get_database_url()
 if not database_url:
     st.warning("Configura DATABASE_URL en Streamlit Secrets para conectar con Supabase.")
@@ -303,7 +411,9 @@ if not database_url:
 engine = get_engine(database_url)
 
 with st.sidebar:
-    st.header("Flujo BI")
+    if os.path.exists("front-end/img/logo.png"):
+        st.image("front-end/img/logo.png", use_container_width=True)
+    st.markdown("### Flujo BI")
     st.caption("7 pasos del flujo BI")
     pagina = st.radio(
         "Modulo",
@@ -448,6 +558,9 @@ elif pagina == "7. Visualizacion BI":
         st.plotly_chart(px.bar(top, x="producto", y="precio_promedio", title="Top 10 productos por precio promedio"), use_container_width=True)
         st.plotly_chart(px.line(evolucion, x="fecha", y="precio_promedio", markers=True, title="Evolucion del precio promedio"), use_container_width=True)
         st.plotly_chart(px.pie(canales, names="tipo_venta", values="precio_promedio", title="Precio promedio por canal"), use_container_width=True)
+
+
+
 
 
 

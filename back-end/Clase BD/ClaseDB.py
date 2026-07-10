@@ -6,16 +6,16 @@ import psycopg2
 class ClaseDB:
     """Conexión y operaciones auxiliares para Supabase PostgreSQL."""
 
-    @staticmethod
-    def conectar_db():
-        return psycopg2.connect(
-            host="db.ksuuystvousnqdfxzwrx.supabase.co",
-            database="postgres",
-            user="postgres",
-            password="Guarniz2006@",
-            port=6543,
-            sslmode="require"
-        )
+@staticmethod
+def conectar_db():
+    return psycopg2.connect(
+        host="aws-1-us-east-2.pooler.supabase.com",
+        database="postgres",
+        user="postgres.ksuuystvousnqdfxzwrx",
+        password="Guarniz2006@",
+        port=6543,
+        sslmode="require"
+    )
 
     @staticmethod
     def sql_valor(v):

@@ -271,6 +271,29 @@ def cargar_capa_semantica(engine) -> pd.DataFrame:
 
 st.title("Plataforma BI Precios Lima")
 st.caption("GitHub + Supabase PostgreSQL + Streamlit Community Cloud")
+pasos_flujo = [
+    ("Paso 1", "Fuentes de Datos", "Captura de archivos SISAP"),
+    ("Paso 2", "Staging Area", "Validacion y control de calidad"),
+    ("Paso 3", "Proceso ETL", "Transformacion de datos"),
+    ("Paso 4", "Data Warehouse", "Carga en Supabase PostgreSQL"),
+    ("Paso 5", "Capa de IA", "Predicciones de precios"),
+    ("Paso 6", "Capa Semantica & KPIs", "Indicadores ejecutivos"),
+    ("Paso 7", "Visualizacion BI", "Dashboard final"),
+]
+
+cols = st.columns(4)
+for idx, (paso, titulo, detalle) in enumerate(pasos_flujo):
+    with cols[idx % 4]:
+        st.markdown(
+            f"""
+            <div style="border:1px solid #d8dee9;border-radius:8px;padding:14px 16px;margin-bottom:12px;min-height:112px;background:#ffffff;">
+                <div style="font-size:12px;font-weight:700;color:#2563eb;">{paso}</div>
+                <div style="font-size:16px;font-weight:700;margin-top:8px;color:#111827;">{titulo}</div>
+                <div style="font-size:13px;margin-top:6px;color:#6b7280;">{detalle}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 database_url = get_database_url()
 if not database_url:
@@ -281,9 +304,18 @@ engine = get_engine(database_url)
 
 with st.sidebar:
     st.header("Flujo BI")
+    st.caption("7 pasos del flujo BI")
     pagina = st.radio(
         "Modulo",
-        ["1. Fuentes", "2. Staging y ETL", "3. Data Warehouse", "4. IA", "5. Dashboard"],
+        [
+            "1. Fuentes de Datos",
+            "2. Staging Area",
+            "3. Proceso ETL",
+            "4. Data Warehouse",
+            "5. Capa de IA",
+            "6. Capa Semantica & KPIs",
+            "7. Visualizacion BI",
+        ],
     )
     if st.button("Crear/actualizar tablas Supabase"):
         try:
@@ -299,7 +331,7 @@ if "ok_df" not in st.session_state:
 if "hechos_df" not in st.session_state:
     st.session_state.hechos_df = pd.DataFrame()
 
-if pagina == "1. Fuentes":
+if pagina == "1. Fuentes de Datos":
     st.subheader("Fuentes de datos")
     archivo = st.file_uploader("Carga archivo SISAP en Excel o CSV", type=["xlsx", "xls", "csv"])
     if archivo:
@@ -309,23 +341,43 @@ if pagina == "1. Fuentes":
         st.success(f"Registros leidos: {len(df)} | Validos: {len(st.session_state.ok_df)}")
         st.dataframe(df.head(100), use_container_width=True)
 
-elif pagina == "2. Staging y ETL":
-    st.subheader("Staging y ETL")
+elif pagina == "2. Staging Area":
+    st.subheader("Staging Area")
     raw_df = st.session_state.raw_df
     ok_df = st.session_state.ok_df
     if raw_df.empty:
-        st.info("Primero carga un archivo en Fuentes.")
+        st.info("Primero carga un archivo en Fuentes de Datos.")
     else:
         col1, col2, col3 = st.columns(3)
         col1.metric("Registros fuente", len(raw_df))
         col2.metric("Registros OK", len(ok_df))
         col3.metric("Errores", int((raw_df["estado"] == "ERROR").sum()))
+        st.dataframe(raw_df.head(100), use_container_width=True)
+
+elif pagina == "3. Proceso ETL":
+    st.subheader("Proceso ETL")
+    ok_df = st.session_state.ok_df
+    if ok_df.empty:
+        st.info("Primero valida registros en Staging Area.")
+    else:
         hechos = construir_hechos(ok_df)
         st.session_state.hechos_df = hechos
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Registros limpios", len(ok_df))
+        col2.metric("Hechos generados", len(hechos))
+        col3.metric("Productos", int(hechos["producto"].nunique()) if not hechos.empty else 0)
         st.dataframe(hechos.head(100), use_container_width=True)
+        st.success("ETL preparado. Continua al paso 4 para cargar el Data Warehouse.")
 
+elif pagina == "4. Data Warehouse":
+    st.subheader("Data Warehouse en Supabase")
+    ok_df = st.session_state.ok_df
+    hechos = st.session_state.hechos_df
+    if ok_df.empty or hechos.empty:
+        st.info("Primero ejecuta Fuentes, Staging y Proceso ETL.")
+    else:
         reemplazar = st.checkbox("Reemplazar hechos anteriores en Supabase", value=True)
-        if st.button("Guardar ETL en Supabase"):
+        if st.button("Guardar Data Warehouse en Supabase"):
             try:
                 ejecutar_sql_schema(engine)
                 insertados = insertar_dimensiones_y_hechos(engine, ok_df, hechos, reemplazar)
@@ -333,8 +385,6 @@ elif pagina == "2. Staging y ETL":
             except Exception as exc:
                 st.error(f"Error al guardar en Supabase: {exc}")
 
-elif pagina == "3. Data Warehouse":
-    st.subheader("Data Warehouse en Supabase")
     df = cargar_capa_semantica(engine)
     if df.empty:
         st.info("Aun no hay datos en la vista vw_capa_semantica_bi.")
@@ -342,8 +392,8 @@ elif pagina == "3. Data Warehouse":
         st.metric("Filas analiticas", len(df))
         st.dataframe(df.head(200), use_container_width=True)
 
-elif pagina == "4. IA":
-    st.subheader("Prediccion de precios")
+elif pagina == "5. Capa de IA":
+    st.subheader("Capa de IA")
     df = cargar_capa_semantica(engine)
     if df.empty:
         st.info("Carga datos al Data Warehouse primero.")
@@ -364,8 +414,22 @@ elif pagina == "4. IA":
         pred = pd.DataFrame(predicciones).sort_values("Incremento esperado", ascending=False)
         st.dataframe(pred, use_container_width=True)
 
-elif pagina == "5. Dashboard":
-    st.subheader("Dashboard ejecutivo")
+elif pagina == "6. Capa Semantica & KPIs":
+    st.subheader("Capa Semantica & KPIs")
+    df = cargar_capa_semantica(engine)
+    if df.empty:
+        st.info("Carga datos al Data Warehouse primero.")
+    else:
+        c1, c2, c3, c4, c5 = st.columns(5)
+        c1.metric("Precio promedio", f"{df['precio_promedio'].mean():.2f}")
+        c2.metric("Precio maximo", f"{df['precio_maximo'].max():.2f}")
+        c3.metric("Precio minimo", f"{df['precio_minimo'].min():.2f}")
+        c4.metric("Variacion promedio", f"{df['variacion_precio'].mean():.2f}")
+        c5.metric("Productos", int(df["producto"].nunique()))
+        st.dataframe(df.head(200), use_container_width=True)
+
+elif pagina == "7. Visualizacion BI":
+    st.subheader("Visualizacion BI")
     df = cargar_capa_semantica(engine)
     if df.empty:
         st.info("No hay datos para graficar.")
@@ -384,4 +448,7 @@ elif pagina == "5. Dashboard":
         st.plotly_chart(px.bar(top, x="producto", y="precio_promedio", title="Top 10 productos por precio promedio"), use_container_width=True)
         st.plotly_chart(px.line(evolucion, x="fecha", y="precio_promedio", markers=True, title="Evolucion del precio promedio"), use_container_width=True)
         st.plotly_chart(px.pie(canales, names="tipo_venta", values="precio_promedio", title="Precio promedio por canal"), use_container_width=True)
+
+
+
 

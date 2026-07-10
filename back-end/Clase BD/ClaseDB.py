@@ -12,7 +12,7 @@ class ClaseDB:
             host="db.xddokslbbzozptctpioe.supabase.co",
             database="postgres",
             user="postgres",
-            password="Guarniz2006%40",
+            password="Guarniz2006@",
             port=5432,
             sslmode="require"
         )

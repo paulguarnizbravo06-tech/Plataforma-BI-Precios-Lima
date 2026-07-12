@@ -32,6 +32,17 @@ PASOS_FLUJO = [
     ("Paso 7", "Visualizacion BI", "Dashboard final", "Panel ejecutivo", "#f472b6"),
 ]
 
+ORDEN_PAGINAS = [
+    "⊞ Pantalla General",
+    "① Fuentes de Datos",
+    "② Staging Area",
+    "③ Proceso ETL",
+    "④ Data Warehouse",
+    "⑤ Capa de IA",
+    "⑥ Capa Semántica & KPIs",
+    "⑦ Visualización BI"
+]
+
 
 def aplicar_estilos() -> None:
     st.markdown(
@@ -764,7 +775,7 @@ if pagina == "⊞ Pantalla General":
         with cols[idx % 4]:
             st.markdown(
                 f"""
-                <div class="bi-step-card">
+                <div class="bi-step-card" style="margin-bottom: 8px;">
                     <div class="bi-step-top">
                         <span class="bi-step-badge" style="color:{color};">{paso}</span>
                         <span class="bi-step-kicker">{titulo}</span>
@@ -776,6 +787,21 @@ if pagina == "⊞ Pantalla General":
                 """,
                 unsafe_allow_html=True,
             )
+            # Buscar la pagina que corresponde a este paso en ORDEN_PAGINAS
+            matching_page = ""
+            for p_name in ORDEN_PAGINAS:
+                # Extraer digito de "Paso X" y mapear al circulo de la barra lateral (ej. "①")
+                numero_paso = paso.split(" ")[1]
+                unicode_numeros = {"1": "①", "2": "②", "3": "③", "4": "④", "5": "⑤", "6": "⑥", "7": "⑦"}
+                prefix = unicode_numeros.get(numero_paso, "")
+                if prefix and p_name.startswith(prefix):
+                    matching_page = p_name
+                    break
+            
+            if matching_page:
+                if st.button(f"Explorar {paso} ->", key=f"btn_goto_{paso}", use_container_width=True):
+                    st.session_state.pagina = matching_page
+                    st.rerun()
 
 elif pagina == "① Fuentes de Datos":
     st.subheader("Fuentes de datos")

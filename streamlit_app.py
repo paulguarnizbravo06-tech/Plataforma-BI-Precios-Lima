@@ -1237,7 +1237,11 @@ FK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #
 
             precio_futuro = [proyectar(serie_precio, i) for i in range(1, 9)]
             df_precio_hist = pd.DataFrame({"Fecha": serie_precio.index, "Valor": serie_precio.values, "Tipo": "Historico"})
-            df_precio_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": precio_futuro, "Tipo": "Proyectado"})
+            df_precio_pred = pd.DataFrame({
+                "Fecha": [serie_precio.index.max()] + list(fechas_futuras), 
+                "Valor": [float(serie_precio.iloc[-1])] + list(precio_futuro), 
+                "Tipo": "Proyectado"
+            })
             df_precio_plot = pd.concat([df_precio_hist, df_precio_pred], ignore_index=True)
             fig_precio = px.line(df_precio_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Precio Promedio (S/)"})
             fig_precio = embellecer_grafico(fig_precio, "Predicción 1: Precio Promedio Futuro", "line")
@@ -1452,7 +1456,11 @@ FK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #
 
             precio_futuro = [proyectar(serie_precio, i) for i in range(1, 9)]
             df_precio_hist = pd.DataFrame({"Fecha": serie_precio.index, "Valor": serie_precio.values, "Tipo": "Historico"})
-            df_precio_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": precio_futuro, "Tipo": "Proyectado"})
+            df_precio_pred = pd.DataFrame({
+                "Fecha": [serie_precio.index.max()] + list(fechas_futuras), 
+                "Valor": [float(serie_precio.iloc[-1])] + list(precio_futuro), 
+                "Tipo": "Proyectado"
+            })
             df_precio_plot = pd.concat([df_precio_hist, df_precio_pred], ignore_index=True)
             fig_precio = px.line(df_precio_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Precio Promedio (S/)"})
             fig_precio = embellecer_grafico(fig_precio, "Prediccion 1: Precio Promedio Futuro", "line")
@@ -1461,7 +1469,11 @@ FK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #
             serie_var = df_filtrado.groupby("fecha")["variacion_precio"].mean().sort_index()
             var_futuro = [proyectar(serie_var, i) for i in range(1, 9)]
             df_var_hist = pd.DataFrame({"Fecha": serie_var.index, "Valor": serie_var.values, "Tipo": "Historico"})
-            df_var_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": var_futuro, "Tipo": "Proyectado"})
+            df_var_pred = pd.DataFrame({
+                "Fecha": [serie_var.index.max()] + list(fechas_futuras), 
+                "Valor": [float(serie_var.iloc[-1])] + list(var_futuro), 
+                "Tipo": "Proyectado"
+            })
             df_var_plot = pd.concat([df_var_hist, df_var_pred], ignore_index=True)
             fig_var = px.line(df_var_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Variacion Promedio (S/)"})
             fig_var = embellecer_grafico(fig_var, "Prediccion 2: Tendencia de Variacion de Precios", "line")
@@ -1493,7 +1505,11 @@ FK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #
                 fechas_futuras_p = pd.date_range(start=serie_p_top.index.max() + pd.Timedelta(days=7), periods=8, freq="7D")
                 p_futuro = [proyectar(serie_p_top, i) for i in range(1, 9)]
                 df_p_hist = pd.DataFrame({"Fecha": serie_p_top.index, "Precio": serie_p_top.values, "Tipo": "Historico"})
-                df_p_pred = pd.DataFrame({"Fecha": fechas_futuras_p, "Precio": p_futuro, "Tipo": "Proyectado"})
+                df_p_pred = pd.DataFrame({
+                    "Fecha": [serie_p_top.index.max()] + list(fechas_futuras_p), 
+                    "Precio": [float(serie_p_top.iloc[-1])] + list(p_futuro), 
+                    "Tipo": "Proyectado"
+                })
                 df_p_plot = pd.concat([df_p_hist, df_p_pred], ignore_index=True)
 
                 fig_prod = px.line(df_p_plot, x="Fecha", y="Precio", color="Tipo", line_dash="Tipo", labels={"Precio": "Precio (S/)"})
@@ -1512,7 +1528,11 @@ FK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #
                 serie_diff = (por_canal["Minorista"] - por_canal["Mayorista"]).dropna().sort_index()
                 diff_futuro = [proyectar(serie_diff, i) for i in range(1, 9)]
                 df_diff_hist = pd.DataFrame({"Fecha": serie_diff.index, "Brecha": serie_diff.values, "Tipo": "Historico"})
-                df_diff_pred = pd.DataFrame({"Fecha": fechas_futuras, "Brecha": diff_futuro, "Tipo": "Proyectado"})
+                df_diff_pred = pd.DataFrame({
+                    "Fecha": [serie_diff.index.max()] + list(fechas_futuras), 
+                    "Brecha": [float(serie_diff.iloc[-1])] + list(diff_futuro), 
+                    "Tipo": "Proyectado"
+                })
                 df_diff_plot = pd.concat([df_diff_hist, df_diff_pred], ignore_index=True)
                 fig_diff = px.line(df_diff_plot, x="Fecha", y="Brecha", color="Tipo", line_dash="Tipo", labels={"Brecha": "Diferencia (S/)"})
                 fig_diff = embellecer_grafico(fig_diff, "Prediccion 4: Diferencia Mayorista vs Minorista Futura", "line")

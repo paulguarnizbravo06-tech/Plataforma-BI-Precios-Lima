@@ -342,10 +342,20 @@ def aplicar_estilos() -> None:
 
 
 def get_database_url() -> str | None:
+    url = None
     try:
-        return st.secrets.get("DATABASE_URL")
+        url = st.secrets.get("DATABASE_URL")
     except Exception:
-        return os.getenv("DATABASE_URL")
+        url = os.getenv("DATABASE_URL")
+        
+    if url:
+        if url.startswith("postgresql+psycopg2://"):
+            url = url.replace("postgresql+psycopg2://", "postgresql+pg8000://", 1)
+        elif url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+pg8000://", 1)
+        elif url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+pg8000://", 1)
+    return url
 
 
 @st.cache_resource
@@ -691,7 +701,7 @@ df_filtrado = pd.DataFrame()
 
 with st.sidebar:
     if os.path.exists("front-end/img/logo.png"):
-        st.image("front-end/img/logo.png", use_container_width=True)
+        st.image("front-end/img/logo.png", width="stretch")
     if "pagina" not in st.session_state:
         st.session_state.pagina = "⊞ Pantalla General"
 

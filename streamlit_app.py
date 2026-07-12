@@ -759,727 +759,740 @@ with st.sidebar:
             
     pagina = st.session_state.pagina
 
-    # Inyectar filtros de la barra lateral si hay datos y estamos en módulos de visualización/IA
+    # --------------------------------------------------------------------------
+    # CONFIGURACIÓN DE CONTENEDOR PRINCIPAL Y ZONA DE FILTROS AL LADO DEL DASHBOARD
+    # --------------------------------------------------------------------------
     if not df_analisis.empty and pagina in ["⑤ Capa de IA", "⑥ Capa Semántica & KPIs", "⑦ Visualización BI"]:
-        st.markdown("---")
-        st.markdown("###  Zona de Filtros")
+        col_filtros, col_principal = st.columns([1.2, 4.0])
         
-        # 1. Rango de Fechas
-        min_date = df_analisis["fecha"].min().date()
-        max_date = df_analisis["fecha"].max().date()
-        
-        date_val = st.date_input(
-            "Rango de Fechas",
-            value=(min_date, max_date),
-            min_value=min_date,
-            max_value=max_date,
-            key="date_range_picker"
-        )
-        
-        if isinstance(date_val, (list, tuple)) and len(date_val) == 2:
-            start_date, end_date = date_val
-        else:
-            start_date = end_date = date_val[0] if isinstance(date_val, (list, tuple)) and len(date_val) > 0 else min_date
+        with col_filtros:
+            st.markdown(
+                """
+                <div style="background-color: #ffffff; padding: 18px; border-radius: 10px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #3b82f6; padding-bottom: 6px;">Zona de Filtros</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+            # 1. Rango de Fechas
+            min_date = df_analisis["fecha"].min().date()
+            max_date = df_analisis["fecha"].max().date()
             
-        # 2. Selección de Producto
-        productos_disponibles = sorted(df_analisis["producto"].dropna().unique().tolist())
-        select_all_prod = st.checkbox("Seleccionar todo", value=True, key="sel_all_prod")
-        
-        productos_seleccionados = []
-        if select_all_prod:
-            productos_seleccionados = productos_disponibles
-        else:
-            # Contenedor scrollable nativo de Streamlit
-            with st.container(height=200):
-                for prod in productos_disponibles:
-                    if st.checkbox(prod, value=False, key=f"chk_prod_{prod}"):
-                        productos_seleccionados.append(prod)
-            if not productos_seleccionados:
+            date_val = st.date_input(
+                "Rango de Fechas",
+                value=(min_date, max_date),
+                min_value=min_date,
+                max_value=max_date,
+                key="date_range_picker"
+            )
+            
+            if isinstance(date_val, (list, tuple)) and len(date_val) == 2:
+                start_date, end_date = date_val
+            else:
+                start_date = end_date = date_val[0] if isinstance(date_val, (list, tuple)) and len(date_val) > 0 else min_date
+                
+            # 2. Selección de Producto
+            productos_disponibles = sorted(df_analisis["producto"].dropna().unique().tolist())
+            select_all_prod = st.checkbox("Seleccionar todo", value=True, key="sel_all_prod")
+            
+            productos_seleccionados = []
+            if select_all_prod:
                 productos_seleccionados = productos_disponibles
-        
-        # 3. Tipo de Mercado
-        st.markdown("**Tipo de Mercado**")
-        tipos_venta_disponibles = sorted(df_analisis["tipo_venta"].dropna().unique().tolist())
-        tipo_venta_selected = []
-        for tv in tipos_venta_disponibles:
-            if st.checkbox(tv, value=True, key=f"chk_tv_{tv}"):
-                tipo_venta_selected.append(tv)
-        if not tipo_venta_selected:
-            tipo_venta_selected = tipos_venta_disponibles
+            else:
+                with st.container(height=200):
+                    for prod in productos_disponibles:
+                        if st.checkbox(prod, value=False, key=f"chk_prod_{prod}"):
+                            productos_seleccionados.append(prod)
+                if not productos_seleccionados:
+                    productos_seleccionados = productos_disponibles
             
-        # Aplicar filtrado
-        df_filtrado = df_analisis[
-            (df_analisis["fecha"].dt.date >= start_date) &
-            (df_analisis["fecha"].dt.date <= end_date) &
-            (df_analisis["producto"].isin(productos_seleccionados)) &
-            (df_analisis["tipo_venta"].isin(tipo_venta_selected))
-        ]
+            # 3. Tipo de Mercado
+            st.markdown("**Tipo de Mercado**")
+            tipos_venta_disponibles = sorted(df_analisis["tipo_venta"].dropna().unique().tolist())
+            tipo_venta_selected = []
+            for tv in tipos_venta_disponibles:
+                if st.checkbox(tv, value=True, key=f"chk_tv_{tv}"):
+                    tipo_venta_selected.append(tv)
+            if not tipo_venta_selected:
+                tipo_venta_selected = tipos_venta_disponibles
+                
+            # Aplicar filtrado
+            df_filtrado = df_analisis[
+                (df_analisis["fecha"].dt.date >= start_date) &
+                (df_analisis["fecha"].dt.date <= end_date) &
+                (df_analisis["producto"].isin(productos_seleccionados)) &
+                (df_analisis["tipo_venta"].isin(tipo_venta_selected))
+            ]
+        contenedor_principal = col_principal
     else:
         df_filtrado = df_analisis
+        contenedor_principal = st
 
-if "raw_df" not in st.session_state:
-    st.session_state.raw_df = pd.DataFrame()
-if "ok_df" not in st.session_state:
-    st.session_state.ok_df = pd.DataFrame()
-if "hechos_df" not in st.session_state:
-    st.session_state.hechos_df = pd.DataFrame()
+with contenedor_principal:
+    if "raw_df" not in st.session_state:
+        st.session_state.raw_df = pd.DataFrame()
+    if "ok_df" not in st.session_state:
+        st.session_state.ok_df = pd.DataFrame()
+    if "hechos_df" not in st.session_state:
+        st.session_state.hechos_df = pd.DataFrame()
 
-if pagina == "⊞ Pantalla General":
-    st.markdown(
-        """
-        <div class="bi-topbar">
-            <h1>Plataforma BI Integrada - Monitoreo de Precios en Mercados de Lima</h1>
-            <p>Arquitectura cloud end-to-end: captura, staging, ETL, warehouse, analitica predictiva y visualizacion ejecutiva.</p>
-            <div class="bi-cloud-pill"><span class="bi-dot"></span> GitHub + Supabase PostgreSQL + Streamlit Community Cloud</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    if pagina == "⊞ Pantalla General":
+        st.markdown(
+            """
+            <div class="bi-topbar">
+                <h1>Plataforma BI Integrada - Monitoreo de Precios en Mercados de Lima</h1>
+                <p>Arquitectura cloud end-to-end: captura, staging, ETL, warehouse, analitica predictiva y visualizacion ejecutiva.</p>
+                <div class="bi-cloud-pill"><span class="bi-dot"></span> GitHub + Supabase PostgreSQL + Streamlit Community Cloud</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    cols = st.columns(4)
-    for idx, (paso, titulo, detalle, estado, color) in enumerate(PASOS_FLUJO):
-        with cols[idx % 4]:
-            st.markdown(
-                f"""
-                <div class="bi-step-card" style="margin-bottom: 8px;">
-                    <div class="bi-step-top">
-                        <span class="bi-step-badge" style="color:{color};">{paso}</span>
-                        <span class="bi-step-kicker">{titulo}</span>
+        cols = st.columns(4)
+        for idx, (paso, titulo, detalle, estado, color) in enumerate(PASOS_FLUJO):
+            with cols[idx % 4]:
+                st.markdown(
+                    f"""
+                    <div class="bi-step-card" style="margin-bottom: 8px;">
+                        <div class="bi-step-top">
+                            <span class="bi-step-badge" style="color:{color};">{paso}</span>
+                            <span class="bi-step-kicker">{titulo}</span>
+                        </div>
+                        <div class="bi-step-title">{titulo}</div>
+                        <div class="bi-step-detail">{detalle}</div>
+                        <div class="bi-step-foot"><span style="color:{color};font-weight:800;">{estado}</span></div>
                     </div>
-                    <div class="bi-step-title">{titulo}</div>
-                    <div class="bi-step-detail">{detalle}</div>
-                    <div class="bi-step-foot"><span style="color:{color};font-weight:800;">{estado}</span></div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            # Buscar la pagina que corresponde a este paso en ORDEN_PAGINAS
-            matching_page = ""
-            for p_name in ORDEN_PAGINAS:
-                # Extraer digito de "Paso X" y mapear al circulo de la barra lateral (ej. "①")
-                numero_paso = paso.split(" ")[1]
-                unicode_numeros = {"1": "①", "2": "②", "3": "③", "4": "④", "5": "⑤", "6": "⑥", "7": "⑦"}
-                prefix = unicode_numeros.get(numero_paso, "")
-                if prefix and p_name.startswith(prefix):
-                    matching_page = p_name
-                    break
-            
-            if matching_page:
-                if st.button(f"Explorar {paso} ->", key=f"btn_goto_{paso}", use_container_width=True):
-                    st.session_state.pagina = matching_page
-                    st.rerun()
+                    """,
+                    unsafe_allow_html=True,
+                )
+                # Buscar la pagina que corresponde a este paso en ORDEN_PAGINAS
+                matching_page = ""
+                for p_name in ORDEN_PAGINAS:
+                    # Extraer digito de "Paso X" y mapear al circulo de la barra lateral (ej. "①")
+                    numero_paso = paso.split(" ")[1]
+                    unicode_numeros = {"1": "①", "2": "②", "3": "③", "4": "④", "5": "⑤", "6": "⑥", "7": "⑦"}
+                    prefix = unicode_numeros.get(numero_paso, "")
+                    if prefix and p_name.startswith(prefix):
+                        matching_page = p_name
+                        break
 
-elif pagina == "① Fuentes de Datos":
-    st.subheader("Fuentes de datos")
-    archivo = st.file_uploader("Carga archivo SISAP en Excel o CSV", type=["xlsx", "xls", "csv"])
-    if archivo:
-        df = obtener_datos(archivo)
-        st.session_state.raw_df = df
-        st.session_state.ok_df = df[df["estado"] == "OK"].copy()
-        st.success(f"Registros leidos: {len(df)} | Validos: {len(st.session_state.ok_df)}")
-        st.dataframe(df.head(100), use_container_width=True)
+                if matching_page:
+                    if st.button(f"Explorar {paso} ->", key=f"btn_goto_{paso}", use_container_width=True):
+                        st.session_state.pagina = matching_page
+                        st.rerun()
 
-elif pagina == "② Staging Area":
-    st.subheader("Staging Area")
-    raw_df = st.session_state.raw_df
-    ok_df = st.session_state.ok_df
-    if raw_df.empty:
-        st.info("Primero carga un archivo en Fuentes de Datos.")
-    else:
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Registros fuente", len(raw_df))
-        col2.metric("Registros OK", len(ok_df))
-        col3.metric("Errores", int((raw_df["estado"] == "ERROR").sum()))
-        st.dataframe(raw_df.head(100), use_container_width=True)
+    elif pagina == "① Fuentes de Datos":
+        st.subheader("Fuentes de datos")
+        archivo = st.file_uploader("Carga archivo SISAP en Excel o CSV", type=["xlsx", "xls", "csv"])
+        if archivo:
+            df = obtener_datos(archivo)
+            st.session_state.raw_df = df
+            st.session_state.ok_df = df[df["estado"] == "OK"].copy()
+            st.success(f"Registros leidos: {len(df)} | Validos: {len(st.session_state.ok_df)}")
+            st.dataframe(df.head(100), use_container_width=True)
 
-elif pagina == "③ Proceso ETL":
-    st.subheader("Proceso ETL")
-    ok_df = st.session_state.ok_df
-    if ok_df.empty:
-        st.info("Primero valida registros en Staging Area.")
-    else:
-        hechos = construir_hechos(ok_df)
-        st.session_state.hechos_df = hechos
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Registros limpios", len(ok_df))
-        col2.metric("Hechos generados", len(hechos))
-        col3.metric("Productos", int(hechos["producto"].nunique()) if not hechos.empty else 0)
-        st.dataframe(hechos.head(100), use_container_width=True)
-        st.success("ETL preparado. Continua al paso 4 para cargar el Data Warehouse.")
+    elif pagina == "② Staging Area":
+        st.subheader("Staging Area")
+        raw_df = st.session_state.raw_df
+        ok_df = st.session_state.ok_df
+        if raw_df.empty:
+            st.info("Primero carga un archivo en Fuentes de Datos.")
+        else:
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Registros fuente", len(raw_df))
+            col2.metric("Registros OK", len(ok_df))
+            col3.metric("Errores", int((raw_df["estado"] == "ERROR").sum()))
+            st.dataframe(raw_df.head(100), use_container_width=True)
 
-elif pagina == "④ Data Warehouse":
-    st.subheader("Data Warehouse en Supabase")
-    
-    # 1. Verificar Estado del Data Warehouse en Tiempo Real
-    count_db = 0
-    db_connected = False
-    try:
-        with engine.connect() as conn:
-            res = conn.execute(text("SELECT COUNT(*) FROM fact_precios")).fetchone()
-            count_db = res[0] if res else 0
-            db_connected = True
-    except Exception:
+    elif pagina == "③ Proceso ETL":
+        st.subheader("Proceso ETL")
+        ok_df = st.session_state.ok_df
+        if ok_df.empty:
+            st.info("Primero valida registros en Staging Area.")
+        else:
+            hechos = construir_hechos(ok_df)
+            st.session_state.hechos_df = hechos
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Registros limpios", len(ok_df))
+            col2.metric("Hechos generados", len(hechos))
+            col3.metric("Productos", int(hechos["producto"].nunique()) if not hechos.empty else 0)
+            st.dataframe(hechos.head(100), use_container_width=True)
+            st.success("ETL preparado. Continua al paso 4 para cargar el Data Warehouse.")
+
+    elif pagina == "④ Data Warehouse":
+        st.subheader("Data Warehouse en Supabase")
+
+        # 1. Verificar Estado del Data Warehouse en Tiempo Real
+        count_db = 0
         db_connected = False
-        
-    # Calcular estado
-    if db_connected and count_db > 0:
-        status_color = "#10b981" # Verde
-        status_text = "CARGADO Y ACTIVO (Supabase Cloud)"
-        status_desc = f"El Data Mart se encuentra inicializado y activo en Supabase con {count_db} registros de hechos cargados."
-    elif not st.session_state.hechos_df.empty:
-        status_color = "#f59e0b" # Naranja
-        status_text = "PENDIENTE DE CARGA (ETL local listo)"
-        status_desc = "Los hechos y dimensiones han sido calculados localmente (Paso 3). Usa el botón 'Guardar Data Warehouse' abajo para subirlos a Supabase."
-    else:
-        status_color = "#ef4444" # Rojo
-        status_text = "ESPERANDO INGESTA DE DATOS (Paso 1)"
-        status_desc = "La tabla de hechos local está vacía. Por favor, sube un archivo SISAP en 'Fuentes de Datos' y ejecuta el ETL."
-        
-    st.markdown(
-        f"""
-        <div style="background-color: #1e293b; padding: 18px 24px; border-radius: 10px; border-left: 5px solid {status_color}; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(15,23,42,0.1);">
-            <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Estado del Data Mart</div>
-            <div style="font-size: 18px; font-weight: 800; color: #ffffff; margin-top: 5px; letter-spacing: .02em;">{status_text}</div>
-            <div style="font-size: 13px; color: #cbd5e1; margin-top: 6px; line-height: 1.4;">{status_desc}</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        """<div style="background-color: #1e293b; padding: 22px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-<div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">[Copo de Nieve] Modelo Logico Fisico: Snowflake Schema (Data Warehouse)</div>
+        try:
+            with engine.connect() as conn:
+                res = conn.execute(text("SELECT COUNT(*) FROM fact_precios")).fetchone()
+                count_db = res[0] if res else 0
+                db_connected = True
+        except Exception:
+            db_connected = False
 
-<!-- Leyenda de Cardinalidad 1 a Muchos -->
-<div style="font-size: 10px; color: #94a3b8; display: flex; gap: 15px; margin-bottom: 22px; border-bottom: 1px solid #334155; padding-bottom: 10px;">
-<span style="font-weight: 600; color: #cbd5e1;">Cardinalidad:</span>
-<span><span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-right: 4px;">1</span> Uno (Lado Principal / PK)</span>
-<span><span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-right: 4px;">N</span> Muchos (Lado Hechos / FK)</span>
-</div>
+        # Calcular estado
+        if db_connected and count_db > 0:
+            status_color = "#10b981" # Verde
+            status_text = "CARGADO Y ACTIVO (Supabase Cloud)"
+            status_desc = f"El Data Mart se encuentra inicializado y activo en Supabase con {count_db} registros de hechos cargados."
+        elif not st.session_state.hechos_df.empty:
+            status_color = "#f59e0b" # Naranja
+            status_text = "PENDIENTE DE CARGA (ETL local listo)"
+            status_desc = "Los hechos y dimensiones han sido calculados localmente (Paso 3). Usa el botón 'Guardar Data Warehouse' abajo para subirlos a Supabase."
+        else:
+            status_color = "#ef4444" # Rojo
+            status_text = "ESPERANDO INGESTA DE DATOS (Paso 1)"
+            status_desc = "La tabla de hechos local está vacía. Por favor, sube un archivo SISAP en 'Fuentes de Datos' y ejecuta el ETL."
 
-<div style="display: grid; grid-template-columns: 1.2fr 80px 1.5fr 80px 1.2fr; gap: 0px; align-items: center;">
+        st.markdown(
+            f"""
+            <div style="background-color: #1e293b; padding: 18px 24px; border-radius: 10px; border-left: 5px solid {status_color}; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(15,23,42,0.1);">
+                <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Estado del Data Mart</div>
+                <div style="font-size: 18px; font-weight: 800; color: #ffffff; margin-top: 5px; letter-spacing: .02em;">{status_text}</div>
+                <div style="font-size: 13px; color: #cbd5e1; margin-top: 6px; line-height: 1.4;">{status_desc}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        st.markdown(
+            """<div style="background-color: #1e293b; padding: 22px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+    <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">[Copo de Nieve] Modelo Logico Fisico: Snowflake Schema (Data Warehouse)</div>
 
-<!-- Columna 1: Lado Izquierdo (Dimension Producto) -->
-<div style="display: flex; flex-direction: column; justify-content: center; height: 100%; min-height: 520px;">
-<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-<span style="color: #38bdf8; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_producto</span>
-<hr style="margin: 6px 0; border-color: #1e293b;">
-<div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-PK <span style="color: #cbd5e1;">id_producto</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
-# <span style="color: #cbd5e1;">producto</span> (Nombre)
-</div>
-</div>
-</div>
+    <!-- Leyenda de Cardinalidad 1 a Muchos -->
+    <div style="font-size: 10px; color: #94a3b8; display: flex; gap: 15px; margin-bottom: 22px; border-bottom: 1px solid #334155; padding-bottom: 10px;">
+    <span style="font-weight: 600; color: #cbd5e1;">Cardinalidad:</span>
+    <span><span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-right: 4px;">1</span> Uno (Lado Principal / PK)</span>
+    <span><span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-right: 4px;">N</span> Muchos (Lado Hechos / FK)</span>
+    </div>
 
-<!-- Columna 2: Conectores Izquierdos (Horizontal a la Tabla de Hechos) -->
-<div style="display: flex; align-items: center; justify-content: center; height: 100%; min-height: 520px;">
-<svg width="80" height="520" style="overflow: visible;">
-<path d="M 0,260 L 80,260" stroke="#38bdf8" stroke-width="2" fill="none"/>
-<polygon points="75,256 80,260 75,264" fill="#38bdf8"/>
-<circle cx="3" cy="260" r="3" fill="#38bdf8"/>
-<text x="8" y="253" fill="#10b981" font-size="10" font-weight="bold">1</text>
-<text x="60" y="253" fill="#a855f7" font-size="10" font-weight="bold">N</text>
-</svg>
-</div>
+    <div style="display: grid; grid-template-columns: 1.2fr 80px 1.5fr 80px 1.2fr; gap: 0px; align-items: center;">
 
-<!-- Columna 3: Centro (Tabla de Hechos - fact_precios) -->
-<div style="display: flex; flex-direction: column; justify-content: center; height: 100%; min-height: 520px;">
-<div style="background: #1e3a8a; border: 2px solid #3b82f6; border-radius: 10px; padding: 18px; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25); width: 100%;">
-<span style="color: #38bdf8; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: .02em;">fact_precios</span>
-<div style="font-size: 9px; color: #93c5fd; text-transform: uppercase; font-weight: 600; margin-top: 2px;">Tabla de Hechos (Métricas)</div>
-<hr style="margin: 8px 0; border-color: #2563eb;">
-<div style="font-size: 11px; color: #dbeafe; line-height: 1.5;">
-PK <span style="color: #ffffff; font-weight: 600;">id_precio</span><br>
-FK <span style="color: #ffffff; font-weight: 600;">id_producto</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
-FK <span style="color: #ffffff; font-weight: 600;">id_tiempo</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
-FK <span style="color: #ffffff; font-weight: 600;">id_unidad</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
-FK <span style="color: #ffffff; font-weight: 600;">id_tipo_venta</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
-# <span style="color: #cbd5e1;">precio_min</span><br>
-# <span style="color: #cbd5e1;">precio_prom</span><br>
-# <span style="color: #cbd5e1;">precio_max</span>
-</div>
-</div>
-</div>
+    <!-- Columna 1: Lado Izquierdo (Dimension Producto) -->
+    <div style="display: flex; flex-direction: column; justify-content: center; height: 100%; min-height: 520px;">
+    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <span style="color: #38bdf8; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_producto</span>
+    <hr style="margin: 6px 0; border-color: #1e293b;">
+    <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
+    PK <span style="color: #cbd5e1;">id_producto</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
+    # <span style="color: #cbd5e1;">producto</span> (Nombre)
+    </div>
+    </div>
+    </div>
 
-<!-- Columna 4: Conectores Derechos (Horizontales a la Tabla de Hechos) -->
-<div style="display: flex; align-items: center; justify-content: center; height: 100%; min-height: 520px;">
-<svg width="80" height="520" style="overflow: visible;">
-<!-- Conector dim_tiempo a fact_precios (Recto Horizontal) -->
-<path d="M 80,260 L 0,260" stroke="#10b981" stroke-width="2" fill="none"/>
-<polygon points="5,256 0,260 5,264" fill="#10b981"/>
-<circle cx="77" cy="260" r="3" fill="#10b981"/>
-<text x="65" y="253" fill="#10b981" font-size="10" font-weight="bold">1</text>
-<text x="12" y="253" fill="#a855f7" font-size="10" font-weight="bold">N</text>
+    <!-- Columna 2: Conectores Izquierdos (Horizontal a la Tabla de Hechos) -->
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%; min-height: 520px;">
+    <svg width="80" height="520" style="overflow: visible;">
+    <path d="M 0,260 L 80,260" stroke="#38bdf8" stroke-width="2" fill="none"/>
+    <polygon points="75,256 80,260 75,264" fill="#38bdf8"/>
+    <circle cx="3" cy="260" r="3" fill="#38bdf8"/>
+    <text x="8" y="253" fill="#10b981" font-size="10" font-weight="bold">1</text>
+    <text x="60" y="253" fill="#a855f7" font-size="10" font-weight="bold">N</text>
+    </svg>
+    </div>
 
-<!-- Conector dim_tipo_venta a fact_precios (Curva/Angulo) -->
-<path d="M 80,370 L 40,370 L 15,310 L 0,310" stroke="#a78bfa" stroke-width="2" fill="none"/>
-<polygon points="5,306 0,310 5,314" fill="#a78bfa"/>
-<circle cx="77" cy="370" r="3" fill="#a78bfa"/>
-<text x="65" y="363" fill="#10b981" font-size="10" font-weight="bold">1</text>
-<text x="12" y="303" fill="#a855f7" font-size="10" font-weight="bold">N</text>
+    <!-- Columna 3: Centro (Tabla de Hechos - fact_precios) -->
+    <div style="display: flex; flex-direction: column; justify-content: center; height: 100%; min-height: 520px;">
+    <div style="background: #1e3a8a; border: 2px solid #3b82f6; border-radius: 10px; padding: 18px; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25); width: 100%;">
+    <span style="color: #38bdf8; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: .02em;">fact_precios</span>
+    <div style="font-size: 9px; color: #93c5fd; text-transform: uppercase; font-weight: 600; margin-top: 2px;">Tabla de Hechos (Métricas)</div>
+    <hr style="margin: 8px 0; border-color: #2563eb;">
+    <div style="font-size: 11px; color: #dbeafe; line-height: 1.5;">
+    PK <span style="color: #ffffff; font-weight: 600;">id_precio</span><br>
+    FK <span style="color: #ffffff; font-weight: 600;">id_producto</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
+    FK <span style="color: #ffffff; font-weight: 600;">id_tiempo</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
+    FK <span style="color: #ffffff; font-weight: 600;">id_unidad</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
+    FK <span style="color: #ffffff; font-weight: 600;">id_tipo_venta</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
+    # <span style="color: #cbd5e1;">precio_min</span><br>
+    # <span style="color: #cbd5e1;">precio_prom</span><br>
+    # <span style="color: #cbd5e1;">precio_max</span>
+    </div>
+    </div>
+    </div>
 
-<!-- Conector dim_unidad a fact_precios (Curva/Angulo) -->
-<path d="M 80,475 L 50,475 L 20,330 L 0,330" stroke="#f59e0b" stroke-width="2" fill="none"/>
-<polygon points="5,326 0,330 5,334" fill="#f59e0b"/>
-<circle cx="77" cy="475" r="3" fill="#f59e0b"/>
-<text x="65" y="468" fill="#10b981" font-size="10" font-weight="bold">1</text>
-<text x="12" y="323" fill="#a855f7" font-size="10" font-weight="bold">N</text>
-</svg>
-</div>
+    <!-- Columna 4: Conectores Derechos (Horizontales a la Tabla de Hechos) -->
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%; min-height: 520px;">
+    <svg width="80" height="520" style="overflow: visible;">
+    <!-- Conector dim_tiempo a fact_precios (Recto Horizontal) -->
+    <path d="M 80,260 L 0,260" stroke="#10b981" stroke-width="2" fill="none"/>
+    <polygon points="5,256 0,260 5,264" fill="#10b981"/>
+    <circle cx="77" cy="260" r="3" fill="#10b981"/>
+    <text x="65" y="253" fill="#10b981" font-size="10" font-weight="bold">1</text>
+    <text x="12" y="253" fill="#a855f7" font-size="10" font-weight="bold">N</text>
 
-<!-- Columna 5: Lado Derecho (Dimensiones Normalizadas en Copo de Nieve) -->
-<div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; gap: 10px; min-height: 520px;">
+    <!-- Conector dim_tipo_venta a fact_precios (Curva/Angulo) -->
+    <path d="M 80,370 L 40,370 L 15,310 L 0,310" stroke="#a78bfa" stroke-width="2" fill="none"/>
+    <polygon points="5,306 0,310 5,314" fill="#a78bfa"/>
+    <circle cx="77" cy="370" r="3" fill="#a78bfa"/>
+    <text x="65" y="363" fill="#10b981" font-size="10" font-weight="bold">1</text>
+    <text x="12" y="303" fill="#a855f7" font-size="10" font-weight="bold">N</text>
 
-<!-- Rama Tiempo (Copo de Nieve) -->
-<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-<span style="color: #10b981; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_anio</span>
-<hr style="margin: 4px 0; border-color: #1e293b;">
-<div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
-PK <span style="color: #cbd5e1;">id_anio</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
-# <span style="color: #cbd5e1;">anio</span> (2020-2026)
-</div>
-</div>
+    <!-- Conector dim_unidad a fact_precios (Curva/Angulo) -->
+    <path d="M 80,475 L 50,475 L 20,330 L 0,330" stroke="#f59e0b" stroke-width="2" fill="none"/>
+    <polygon points="5,326 0,330 5,334" fill="#f59e0b"/>
+    <circle cx="77" cy="475" r="3" fill="#f59e0b"/>
+    <text x="65" y="468" fill="#10b981" font-size="10" font-weight="bold">1</text>
+    <text x="12" y="323" fill="#a855f7" font-size="10" font-weight="bold">N</text>
+    </svg>
+    </div>
 
-<div style="display: flex; justify-content: center; align-items: center; height: 30px;">
-<svg width="40" height="30" style="overflow: visible;">
-<path d="M 20,0 L 20,30" stroke="#10b981" stroke-width="1.5" fill="none" stroke-dasharray="2,2"/>
-<polygon points="17,25 20,30 23,25" fill="#10b981"/>
-<text x="5" y="10" fill="#10b981" font-size="8" font-weight="bold">1</text>
-<text x="5" y="24" fill="#a855f7" font-size="8" font-weight="bold">N</text>
-</svg>
-</div>
+    <!-- Columna 5: Lado Derecho (Dimensiones Normalizadas en Copo de Nieve) -->
+    <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; gap: 10px; min-height: 520px;">
 
-<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-<span style="color: #10b981; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_mes</span>
-<hr style="margin: 4px 0; border-color: #1e293b;">
-<div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
-PK <span style="color: #cbd5e1;">id_mes</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
-# <span style="color: #cbd5e1;">mes</span> (1-12)<br>
-# <span style="color: #cbd5e1;">nombre_mes</span><br>
-FK <span style="color: #cbd5e1;">id_anio</span> <span style="background: #a855f7; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">N</span>
-</div>
-</div>
+    <!-- Rama Tiempo (Copo de Nieve) -->
+    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <span style="color: #10b981; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_anio</span>
+    <hr style="margin: 4px 0; border-color: #1e293b;">
+    <div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
+    PK <span style="color: #cbd5e1;">id_anio</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
+    # <span style="color: #cbd5e1;">anio</span> (2020-2026)
+    </div>
+    </div>
 
-<div style="display: flex; justify-content: center; align-items: center; height: 30px;">
-<svg width="40" height="30" style="overflow: visible;">
-<path d="M 20,0 L 20,30" stroke="#10b981" stroke-width="1.5" fill="none" stroke-dasharray="2,2"/>
-<polygon points="17,25 20,30 23,25" fill="#10b981"/>
-<text x="5" y="10" fill="#10b981" font-size="8" font-weight="bold">1</text>
-<text x="5" y="24" fill="#a855f7" font-size="8" font-weight="bold">N</text>
-</svg>
-</div>
+    <div style="display: flex; justify-content: center; align-items: center; height: 30px;">
+    <svg width="40" height="30" style="overflow: visible;">
+    <path d="M 20,0 L 20,30" stroke="#10b981" stroke-width="1.5" fill="none" stroke-dasharray="2,2"/>
+    <polygon points="17,25 20,30 23,25" fill="#10b981"/>
+    <text x="5" y="10" fill="#10b981" font-size="8" font-weight="bold">1</text>
+    <text x="5" y="24" fill="#a855f7" font-size="8" font-weight="bold">N</text>
+    </svg>
+    </div>
 
-<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-<span style="color: #10b981; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_tiempo</span>
-<hr style="margin: 4px 0; border-color: #1e293b;">
-<div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
-PK <span style="color: #cbd5e1;">id_tiempo</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
-# <span style="color: #cbd5e1;">fecha</span> (Date)<br>
-# <span style="color: #cbd5e1;">dia</span> (1-31)<br>
-FK <span style="color: #cbd5e1;">id_mes</span> <span style="background: #a855f7; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">N</span>
-</div>
-</div>
+    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <span style="color: #10b981; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_mes</span>
+    <hr style="margin: 4px 0; border-color: #1e293b;">
+    <div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
+    PK <span style="color: #cbd5e1;">id_mes</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
+    # <span style="color: #cbd5e1;">mes</span> (1-12)<br>
+    # <span style="color: #cbd5e1;">nombre_mes</span><br>
+    FK <span style="color: #cbd5e1;">id_anio</span> <span style="background: #a855f7; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">N</span>
+    </div>
+    </div>
 
-<!-- Separador visual de ramas -->
-<div style="height: 15px; border-bottom: 1px dashed #334155; margin: 5px 0;"></div>
+    <div style="display: flex; justify-content: center; align-items: center; height: 30px;">
+    <svg width="40" height="30" style="overflow: visible;">
+    <path d="M 20,0 L 20,30" stroke="#10b981" stroke-width="1.5" fill="none" stroke-dasharray="2,2"/>
+    <polygon points="17,25 20,30 23,25" fill="#10b981"/>
+    <text x="5" y="10" fill="#10b981" font-size="8" font-weight="bold">1</text>
+    <text x="5" y="24" fill="#a855f7" font-size="8" font-weight="bold">N</text>
+    </svg>
+    </div>
 
-<!-- Rama Unidad (Copo de Nieve) -->
-<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-<span style="color: #a78bfa; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_tipo_venta</span>
-<hr style="margin: 4px 0; border-color: #1e293b;">
-<div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
-PK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
-# <span style="color: #cbd5e1;">tipo_venta</span> (Mayorista/Minorista)
-</div>
-</div>
+    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <span style="color: #10b981; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_tiempo</span>
+    <hr style="margin: 4px 0; border-color: #1e293b;">
+    <div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
+    PK <span style="color: #cbd5e1;">id_tiempo</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
+    # <span style="color: #cbd5e1;">fecha</span> (Date)<br>
+    # <span style="color: #cbd5e1;">dia</span> (1-31)<br>
+    FK <span style="color: #cbd5e1;">id_mes</span> <span style="background: #a855f7; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">N</span>
+    </div>
+    </div>
 
-<div style="display: flex; justify-content: center; align-items: center; height: 35px;">
-<svg width="40" height="35" style="overflow: visible;">
-<path d="M 20,0 L 20,35" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-dasharray="2,2"/>
-<polygon points="17,30 20,35 23,30" fill="#f59e0b"/>
-<text x="5" y="10" fill="#10b981" font-size="8" font-weight="bold">1</text>
-<text x="5" y="28" fill="#a855f7" font-size="8" font-weight="bold">N</text>
-</svg>
-</div>
+    <!-- Separador visual de ramas -->
+    <div style="height: 15px; border-bottom: 1px dashed #334155; margin: 5px 0;"></div>
 
-<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-<span style="color: #f59e0b; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_unidad</span>
-<hr style="margin: 4px 0; border-color: #1e293b;">
-<div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
-PK <span style="color: #cbd5e1;">id_unidad</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
-# <span style="color: #cbd5e1;">unidad</span> (Kg, Atado, etc)<br>
-# <span style="color: #cbd5e1;">equivalencia</span><br>
-FK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #a855f7; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">N</span>
-</div>
-</div>
+    <!-- Rama Unidad (Copo de Nieve) -->
+    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <span style="color: #a78bfa; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_tipo_venta</span>
+    <hr style="margin: 4px 0; border-color: #1e293b;">
+    <div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
+    PK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
+    # <span style="color: #cbd5e1;">tipo_venta</span> (Mayorista/Minorista)
+    </div>
+    </div>
 
-</div>
+    <div style="display: flex; justify-content: center; align-items: center; height: 35px;">
+    <svg width="40" height="35" style="overflow: visible;">
+    <path d="M 20,0 L 20,35" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-dasharray="2,2"/>
+    <polygon points="17,30 20,35 23,30" fill="#f59e0b"/>
+    <text x="5" y="10" fill="#10b981" font-size="8" font-weight="bold">1</text>
+    <text x="5" y="28" fill="#a855f7" font-size="8" font-weight="bold">N</text>
+    </svg>
+    </div>
 
-</div>
-</div>""",
-        unsafe_allow_html=True
-    )
+    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <span style="color: #f59e0b; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_unidad</span>
+    <hr style="margin: 4px 0; border-color: #1e293b;">
+    <div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
+    PK <span style="color: #cbd5e1;">id_unidad</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
+    # <span style="color: #cbd5e1;">unidad</span> (Kg, Atado, etc)<br>
+    # <span style="color: #cbd5e1;">equivalencia</span><br>
+    FK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #a855f7; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">N</span>
+    </div>
+    </div>
 
-    st.markdown("### Acciones de Carga y Mantenimiento")
-    
-    ok_df = st.session_state.ok_df
-    hechos = st.session_state.hechos_df
-    if ok_df.empty or hechos.empty:
-        st.info("Primero ejecuta Fuentes, Staging y Proceso ETL.")
-        
-        # Permitir inicializar tablas incluso sin datos de carga listos
-        if st.button("Crear / Actualizar estructura de tablas en Supabase", use_container_width=True):
-            try:
-                ejecutar_sql_schema(engine)
-                st.success("Estructura fisica de tablas verificada con exito en Supabase.")
-                st.rerun()
-            except Exception as exc:
-                st.error(f"Error al inicializar las tablas: {exc}")
-    else:
-        reemplazar = st.checkbox("Reemplazar hechos anteriores en Supabase", value=True)
-        
-        col_btn1, col_btn2 = st.columns(2)
-        with col_btn1:
-            if st.button("Guardar Data Warehouse en Supabase", use_container_width=True):
+    </div>
+
+    </div>
+    </div>""",
+            unsafe_allow_html=True
+        )
+
+        st.markdown("### Acciones de Carga y Mantenimiento")
+
+        ok_df = st.session_state.ok_df
+        hechos = st.session_state.hechos_df
+        if ok_df.empty or hechos.empty:
+            st.info("Primero ejecuta Fuentes, Staging y Proceso ETL.")
+
+            # Permitir inicializar tablas incluso sin datos de carga listos
+            if st.button("Crear / Actualizar estructura de tablas en Supabase", use_container_width=True):
                 try:
                     ejecutar_sql_schema(engine)
-                    insertados = insertar_dimensiones_y_hechos(engine, ok_df, hechos, reemplazar)
-                    st.success(f"Data Warehouse cargado en Supabase. Hechos insertados: {insertados}")
+                    st.success("Estructura fisica de tablas verificada con exito en Supabase.")
                     st.rerun()
                 except Exception as exc:
-                    st.error(f"Error al guardar en Supabase: {exc}")
-        with col_btn2:
-            if st.button("Reconstruir Tablas (Vaciar Supabase)", use_container_width=True):
-                try:
-                    ejecutar_sql_schema(engine)
-                    st.success("Tablas re-creadas con exito (base de datos vaciada).")
-                    st.rerun()
-                except Exception as exc:
-                    st.error(f"Error al vaciar: {exc}")
-                    
-    df = df_analisis
-    if df.empty:
-        st.info("Aun no hay datos en la vista vw_capa_semantica_bi.")
-    else:
-        st.metric("Filas analiticas", len(df))
-        st.dataframe(df.head(200), use_container_width=True)
-
-elif pagina == "⑤ Capa de IA":
-    st.subheader("Capa de Inteligencia Artificial (Predicciones a 8 Semanas)")
-    if df_filtrado.empty:
-        st.warning("No hay datos suficientes para calcular las predicciones con los filtros activos.")
-    else:
-        # Preparamos las series temporales
-        df_filtrado["fecha"] = pd.to_datetime(df_filtrado["fecha"])
-        
-        # 1. Serie Precio Promedio General
-        serie_precio = df_filtrado.groupby("fecha")["precio_promedio"].mean().sort_index()
-        fechas_futuras = pd.date_range(start=serie_precio.index.max() + pd.Timedelta(days=7), periods=8, freq="7D")
-        
-        precio_futuro = [proyectar(serie_precio, i) for i in range(1, 9)]
-        df_precio_hist = pd.DataFrame({"Fecha": serie_precio.index, "Valor": serie_precio.values, "Tipo": "Historico"})
-        df_precio_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": precio_futuro, "Tipo": "Proyectado"})
-        df_precio_plot = pd.concat([df_precio_hist, df_precio_pred], ignore_index=True)
-        fig_precio = px.line(df_precio_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Precio Promedio (S/)"})
-        fig_precio = embellecer_grafico(fig_precio, "Predicción 1: Precio Promedio Futuro", "line")
-        
-        # 2. Serie Tendencia de Variación
-        serie_var = df_filtrado.groupby("fecha")["variacion_precio"].mean().sort_index()
-        var_futuro = [proyectar(serie_var, i) for i in range(1, 9)]
-        df_var_hist = pd.DataFrame({"Fecha": serie_var.index, "Valor": serie_var.values, "Tipo": "Histórico"})
-        df_var_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": var_futuro, "Tipo": "Proyectado"})
-        df_var_plot = pd.concat([df_var_hist, df_var_pred], ignore_index=True)
-        fig_var = px.line(df_var_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Variación Promedio (S/)"})
-        fig_var = embellecer_grafico(fig_var, "Predicción 2: Tendencia de Variación de Precios", "line")
-        
-        # 3. Producto con Mayor Incremento Esperado
-        incrementos = []
-        for prod, grupo in df_filtrado.groupby("producto"):
-            serie_p = grupo.groupby("fecha")["precio_promedio"].mean().sort_index()
-            if len(serie_p) >= 1:
-                actual = float(serie_p.iloc[-1])
-                futuro = proyectar(serie_p, 8)
-                inc = futuro - actual
-                incrementos.append({
-                    "Producto": prod,
-                    "Precio actual (S/)": actual,
-                    "Precio predicho (S/)": futuro,
-                    "Incremento esperado (S/)": inc,
-                    "serie": serie_p
-                })
-        
-        df_incrementos = pd.DataFrame(incrementos)
-        if not df_incrementos.empty:
-            df_incrementos = df_incrementos.sort_values("Incremento esperado (S/)", ascending=False)
-            top_inc = df_incrementos.iloc[0]
-            prod_name = top_inc["Producto"]
-            inc_val = top_inc["Incremento esperado (S/)"]
-            serie_p_top = top_inc["serie"]
-            
-            fechas_futuras_p = pd.date_range(start=serie_p_top.index.max() + pd.Timedelta(days=7), periods=8, freq="7D")
-            p_futuro = [proyectar(serie_p_top, i) for i in range(1, 9)]
-            df_p_hist = pd.DataFrame({"Fecha": serie_p_top.index, "Precio": serie_p_top.values, "Tipo": "Histórico"})
-            df_p_pred = pd.DataFrame({"Fecha": fechas_futuras_p, "Precio": p_futuro, "Tipo": "Proyectado"})
-            df_p_plot = pd.concat([df_p_hist, df_p_pred], ignore_index=True)
-            
-            fig_prod = px.line(df_p_plot, x="Fecha", y="Precio", color="Tipo", line_dash="Tipo", labels={"Precio": "Precio (S/)"})
-            fig_prod = embellecer_grafico(fig_prod, f"Predicción 3: {prod_name} (Mayor Incremento Esperado)", "line")
-            
-            st.info(f"[IA] El producto con **mayor incremento esperado** en las próximas 8 semanas es **{prod_name}** con un alza proyectada de **S/ {inc_val:.2f}**.")
+                    st.error(f"Error al inicializar las tablas: {exc}")
         else:
-            prod_name = "Sin datos"
-            inc_val = 0.0
-            fig_prod = px.line()
-            fig_prod = embellecer_grafico(fig_prod, "Predicción 3: Producto con Mayor Incremento Esperado", "line")
-            
-        # 4. Diferencia Mayorista vs Minorista Futura
-        por_canal = df_filtrado.groupby(["fecha", "tipo_venta"])["precio_promedio"].mean().unstack()
-        if "Minorista" in por_canal.columns and "Mayorista" in por_canal.columns:
-            serie_diff = (por_canal["Minorista"] - por_canal["Mayorista"]).dropna().sort_index()
-            diff_futuro = [proyectar(serie_diff, i) for i in range(1, 9)]
-            df_diff_hist = pd.DataFrame({"Fecha": serie_diff.index, "Brecha": serie_diff.values, "Tipo": "Histórico"})
-            df_diff_pred = pd.DataFrame({"Fecha": fechas_futuras, "Brecha": diff_futuro, "Tipo": "Proyectado"})
-            df_diff_plot = pd.concat([df_diff_hist, df_diff_pred], ignore_index=True)
-            fig_diff = px.line(df_diff_plot, x="Fecha", y="Brecha", color="Tipo", line_dash="Tipo", labels={"Brecha": "Diferencia (S/)"})
-            fig_diff = embellecer_grafico(fig_diff, "Predicción 4: Diferencia Mayorista vs Minorista Futura", "line")
+            reemplazar = st.checkbox("Reemplazar hechos anteriores en Supabase", value=True)
+
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                if st.button("Guardar Data Warehouse en Supabase", use_container_width=True):
+                    try:
+                        ejecutar_sql_schema(engine)
+                        insertados = insertar_dimensiones_y_hechos(engine, ok_df, hechos, reemplazar)
+                        st.success(f"Data Warehouse cargado en Supabase. Hechos insertados: {insertados}")
+                        st.rerun()
+                    except Exception as exc:
+                        st.error(f"Error al guardar en Supabase: {exc}")
+            with col_btn2:
+                if st.button("Reconstruir Tablas (Vaciar Supabase)", use_container_width=True):
+                    try:
+                        ejecutar_sql_schema(engine)
+                        st.success("Tablas re-creadas con exito (base de datos vaciada).")
+                        st.rerun()
+                    except Exception as exc:
+                        st.error(f"Error al vaciar: {exc}")
+
+        df = df_analisis
+        if df.empty:
+            st.info("Aun no hay datos en la vista vw_capa_semantica_bi.")
         else:
-            fig_diff = px.line()
-            fig_diff = embellecer_grafico(fig_diff, "Predicción 4: Diferencia Mayorista vs Minorista Futura (Sin datos de ambos canales)", "line")
-            
-        # Render en Cuadrícula
-        c1, c2 = st.columns(2)
-        with c1:
-            st.plotly_chart(fig_precio, use_container_width=True, theme=None)
-        with c2:
-            st.plotly_chart(fig_var, use_container_width=True, theme=None)
-            
-        c3, c4 = st.columns(2)
-        with c3:
-            st.plotly_chart(fig_prod, use_container_width=True, theme=None)
-        with c4:
-            st.plotly_chart(fig_diff, use_container_width=True, theme=None)
-            
-        # Tabla resumen de incrementos esperados
-        if not df_incrementos.empty:
-            st.markdown("###  Tabla de Predicciones por Producto")
-            tabla_resumen = df_incrementos.drop(columns=["serie"])
-            for c in ["Precio actual (S/)", "Precio predicho (S/)", "Incremento esperado (S/)"]:
-                tabla_resumen[c] = tabla_resumen[c].map(lambda x: f"S/ {x:.2f}")
-            st.dataframe(tabla_resumen, use_container_width=True, hide_index=True)
+            st.metric("Filas analiticas", len(df))
+            st.dataframe(df.head(200), use_container_width=True)
 
-elif pagina == "⑥ Capa Semántica & KPIs":
-    st.subheader("Capa Semántica & KPIs")
-    if df_filtrado.empty:
-        st.info("Carga datos al Data Warehouse primero o revisa la selección de tus filtros.")
-    else:
-        avg_precio = df_filtrado["precio_promedio"].mean()
-        max_precio = df_filtrado["precio_maximo"].max()
-        min_precio = df_filtrado["precio_minimo"].min()
-        var_promedio = df_filtrado["variacion_precio"].mean()
-        
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Precio Promedio General", f"S/ {avg_precio:.2f}", help="Meta: Mantener estabilidad de precios")
-        c2.metric("Precio Máximo Registrado", f"S/ {max_precio:.2f}", help="Meta: Identificar productos con precios elevados")
-        c3.metric("Precio Mínimo Registrado", f"S/ {min_precio:.2f}", help="Meta: Identificar productos con precios bajos")
-        c4.metric("Variación Promedio", f"S/ {var_promedio:.2f}", help="Meta: Reducir fluctuaciones excesivas")
-        
-        st.markdown("### Capa Semántica - Datos Filtrados")
-        st.dataframe(df_filtrado, use_container_width=True, hide_index=True)
-
-elif pagina == "⑦ Visualización BI":
-    st.subheader("Visualización BI")
-    if df_filtrado.empty:
-        st.warning("No hay datos para graficar con los filtros activos.")
-    else:
-        avg_precio = df_filtrado["precio_promedio"].mean()
-        max_precio = df_filtrado["precio_maximo"].max()
-        min_precio = df_filtrado["precio_minimo"].min()
-        var_promedio = df_filtrado["variacion_precio"].mean()
-
-        # Fila 1: Tarjetas KPI
-        c1, c2, c3, c4 = st.columns(4)
-        with c1:
-            st.markdown(
-                f"""
-                <div class="kpi-container" style="border-left: 5px solid #3b82f6;">
-                    <span class="kpi-title">Precio Promedio General</span>
-                    <h3 class="kpi-val">S/ {avg_precio:.2f}</h3>
-                    <span class="kpi-meta">Meta: Mantener estabilidad</span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        with c2:
-            st.markdown(
-                f"""
-                <div class="kpi-container" style="border-left: 5px solid #10b981;">
-                    <span class="kpi-title">Precio Máximo Registrado</span>
-                    <h3 class="kpi-val">S/ {max_precio:.2f}</h3>
-                    <span class="kpi-meta">Meta: Identificar precios altos</span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        with c3:
-            st.markdown(
-                f"""
-                <div class="kpi-container" style="border-left: 5px solid #8b5cf6;">
-                    <span class="kpi-title">Precio Mínimo Registrado</span>
-                    <h3 class="kpi-val">S/ {min_precio:.2f}</h3>
-                    <span class="kpi-meta">Meta: Identificar precios bajos</span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        with c4:
-            st.markdown(
-                f"""
-                <div class="kpi-container" style="border-left: 5px solid #f97316;">
-                    <span class="kpi-title">Variación Promedio</span>
-                    <h3 class="kpi-val">S/ {var_promedio:.2f}</h3>
-                    <span class="kpi-meta">Meta: Reducir fluctuaciones</span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        # Fila 2: Top productos por precio promedio
-        top = df_filtrado.groupby("producto", as_index=False)["precio_promedio"].mean().sort_values("precio_promedio", ascending=False).head(10)
-        fig_top = px.bar(top, x="producto", y="precio_promedio", labels={"producto": "Producto", "precio_promedio": "Precio Promedio (S/)"})
-        fig_top = embellecer_grafico(fig_top, "Top 10 Productos por Precio Promedio", "bar")
-        st.plotly_chart(fig_top, use_container_width=True, theme=None)
-
-        # Fila 3: Comparación mayorista vs minorista, evolución del precio promedio, y ranking
-        col_pie, col_line, col_table = st.columns([1, 1.2, 1.8])
-
-        with col_pie:
-            canales = df_filtrado.groupby("tipo_venta", as_index=False)["precio_promedio"].mean()
-            fig_pie = px.pie(canales, names="tipo_venta", values="precio_promedio")
-            fig_pie = embellecer_grafico(fig_pie, "Comparación Mayorista vs Minorista", "pie")
-            st.plotly_chart(fig_pie, use_container_width=True, theme=None)
-
-        with col_line:
-            evolucion = df_filtrado.groupby("fecha", as_index=False)["precio_promedio"].mean().sort_values("fecha")
-            evolucion["fecha_str"] = evolucion["fecha"].dt.strftime("%d-%m-%Y")
-            fig_line = px.line(evolucion, x="fecha_str", y="precio_promedio", markers=True, labels={"fecha_str": "Fecha", "precio_promedio": "Precio Promedio (S/)"})
-            fig_line = embellecer_grafico(fig_line, "Evolución del Precio Promedio", "line")
-            st.plotly_chart(fig_line, use_container_width=True, theme=None)
-
-        with col_table:
-            st.markdown("<h4 style='text-align: center; margin-bottom: 12px; font-weight: 700;'>Ranking de Productos por Precio Promedio</h4>", unsafe_allow_html=True)
-            ranking_df = df_filtrado.groupby(["producto", "tipo_venta", "unidad"]).agg({
-                "precio_minimo": "min",
-                "precio_promedio": "mean",
-                "precio_maximo": "max",
-                "variacion_precio": "mean"
-            }).reset_index().sort_values("precio_promedio", ascending=False)
-            
-            ranking_df.columns = ["Producto", "Tipo de Venta", "Unidad", "Mínimo (S/)", "Promedio (S/)", "Máximo (S/)", "Variación (S/)"]
-            for c in ["Mínimo (S/)", "Promedio (S/)", "Máximo (S/)", "Variación (S/)"]:
-                ranking_df[c] = ranking_df[c].map(lambda x: f"{x:.2f}" if pd.notna(x) else "-")
-            
-            st.dataframe(ranking_df, use_container_width=True, hide_index=True)
-
-        # Fila 4: Predicciones de IA Integradas en Visualizacion BI
-        st.markdown("<hr style='border-color: #cbd5e1; margin: 40px 0 25px 0;'>", unsafe_allow_html=True)
-        st.markdown("<h3 style='font-weight: 800; color: #1e293b;'>Predicciones a Futuro de la Capa de IA (8 Semanas)</h3>", unsafe_allow_html=True)
-        
-        # Preparamos las predicciones
-        df_filtrado["fecha"] = pd.to_datetime(df_filtrado["fecha"])
-        
-        # 1. Serie Precio Promedio General
-        serie_precio = df_filtrado.groupby("fecha")["precio_promedio"].mean().sort_index()
-        fechas_futuras = pd.date_range(start=serie_precio.index.max() + pd.Timedelta(days=7), periods=8, freq="7D")
-        
-        precio_futuro = [proyectar(serie_precio, i) for i in range(1, 9)]
-        df_precio_hist = pd.DataFrame({"Fecha": serie_precio.index, "Valor": serie_precio.values, "Tipo": "Historico"})
-        df_precio_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": precio_futuro, "Tipo": "Proyectado"})
-        df_precio_plot = pd.concat([df_precio_hist, df_precio_pred], ignore_index=True)
-        fig_precio = px.line(df_precio_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Precio Promedio (S/)"})
-        fig_precio = embellecer_grafico(fig_precio, "Prediccion 1: Precio Promedio Futuro", "line")
-        
-        # 2. Serie Tendencia de Variacion
-        serie_var = df_filtrado.groupby("fecha")["variacion_precio"].mean().sort_index()
-        var_futuro = [proyectar(serie_var, i) for i in range(1, 9)]
-        df_var_hist = pd.DataFrame({"Fecha": serie_var.index, "Valor": serie_var.values, "Tipo": "Historico"})
-        df_var_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": var_futuro, "Tipo": "Proyectado"})
-        df_var_plot = pd.concat([df_var_hist, df_var_pred], ignore_index=True)
-        fig_var = px.line(df_var_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Variacion Promedio (S/)"})
-        fig_var = embellecer_grafico(fig_var, "Prediccion 2: Tendencia de Variacion de Precios", "line")
-        
-        # 3. Producto con Mayor Incremento Esperado
-        incrementos = []
-        for prod, grupo in df_filtrado.groupby("producto"):
-            serie_p = grupo.groupby("fecha")["precio_promedio"].mean().sort_index()
-            if len(serie_p) >= 1:
-                actual = float(serie_p.iloc[-1])
-                futuro = proyectar(serie_p, 8)
-                inc = futuro - actual
-                incrementos.append({
-                    "Producto": prod,
-                    "Precio actual (S/)": actual,
-                    "Precio predicho (S/)": futuro,
-                    "Incremento esperado (S/)": inc,
-                    "serie": serie_p
-                })
-        
-        df_incrementos = pd.DataFrame(incrementos)
-        if not df_incrementos.empty:
-            df_incrementos = df_incrementos.sort_values("Incremento esperado (S/)", ascending=False)
-            top_inc = df_incrementos.iloc[0]
-            prod_name = top_inc["Producto"]
-            inc_val = top_inc["Incremento esperado (S/)"]
-            serie_p_top = top_inc["serie"]
-            
-            fechas_futuras_p = pd.date_range(start=serie_p_top.index.max() + pd.Timedelta(days=7), periods=8, freq="7D")
-            p_futuro = [proyectar(serie_p_top, i) for i in range(1, 9)]
-            df_p_hist = pd.DataFrame({"Fecha": serie_p_top.index, "Precio": serie_p_top.values, "Tipo": "Historico"})
-            df_p_pred = pd.DataFrame({"Fecha": fechas_futuras_p, "Precio": p_futuro, "Tipo": "Proyectado"})
-            df_p_plot = pd.concat([df_p_hist, df_p_pred], ignore_index=True)
-            
-            fig_prod = px.line(df_p_plot, x="Fecha", y="Precio", color="Tipo", line_dash="Tipo", labels={"Precio": "Precio (S/)"})
-            fig_prod = embellecer_grafico(fig_prod, f"Prediccion 3: {prod_name} (Mayor Incremento Esperado)", "line")
-            
-            st.info(f"[IA] El producto con mayor incremento esperado en las proximas 8 semanas es {prod_name} con un alza proyectada de S/ {inc_val:.2f}.")
+    elif pagina == "⑤ Capa de IA":
+        st.subheader("Capa de Inteligencia Artificial (Predicciones a 8 Semanas)")
+        if df_filtrado.empty:
+            st.warning("No hay datos suficientes para calcular las predicciones con los filtros activos.")
         else:
-            prod_name = "Sin datos"
-            inc_val = 0.0
-            fig_prod = px.line()
-            fig_prod = embellecer_grafico(fig_prod, "Prediccion 3: Producto con Mayor Incremento Esperado", "line")
-            
-        # 4. Diferencia Mayorista vs Minorista Futura
-        por_canal = df_filtrado.groupby(["fecha", "tipo_venta"])["precio_promedio"].mean().unstack()
-        if "Minorista" in por_canal.columns and "Mayorista" in por_canal.columns:
-            serie_diff = (por_canal["Minorista"] - por_canal["Mayorista"]).dropna().sort_index()
-            diff_futuro = [proyectar(serie_diff, i) for i in range(1, 9)]
-            df_diff_hist = pd.DataFrame({"Fecha": serie_diff.index, "Brecha": serie_diff.values, "Tipo": "Historico"})
-            df_diff_pred = pd.DataFrame({"Fecha": fechas_futuras, "Brecha": diff_futuro, "Tipo": "Proyectado"})
-            df_diff_plot = pd.concat([df_diff_hist, df_diff_pred], ignore_index=True)
-            fig_diff = px.line(df_diff_plot, x="Fecha", y="Brecha", color="Tipo", line_dash="Tipo", labels={"Brecha": "Diferencia (S/)"})
-            fig_diff = embellecer_grafico(fig_diff, "Prediccion 4: Diferencia Mayorista vs Minorista Futura", "line")
+            # Preparamos las series temporales
+            df_filtrado["fecha"] = pd.to_datetime(df_filtrado["fecha"])
+
+            # 1. Serie Precio Promedio General
+            serie_precio = df_filtrado.groupby("fecha")["precio_promedio"].mean().sort_index()
+            fechas_futuras = pd.date_range(start=serie_precio.index.max() + pd.Timedelta(days=7), periods=8, freq="7D")
+
+            precio_futuro = [proyectar(serie_precio, i) for i in range(1, 9)]
+            df_precio_hist = pd.DataFrame({"Fecha": serie_precio.index, "Valor": serie_precio.values, "Tipo": "Historico"})
+            df_precio_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": precio_futuro, "Tipo": "Proyectado"})
+            df_precio_plot = pd.concat([df_precio_hist, df_precio_pred], ignore_index=True)
+            fig_precio = px.line(df_precio_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Precio Promedio (S/)"})
+            fig_precio = embellecer_grafico(fig_precio, "Predicción 1: Precio Promedio Futuro", "line")
+
+            # 2. Serie Tendencia de Variación
+            serie_var = df_filtrado.groupby("fecha")["variacion_precio"].mean().sort_index()
+            var_futuro = [proyectar(serie_var, i) for i in range(1, 9)]
+            df_var_hist = pd.DataFrame({"Fecha": serie_var.index, "Valor": serie_var.values, "Tipo": "Histórico"})
+            df_var_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": var_futuro, "Tipo": "Proyectado"})
+            df_var_plot = pd.concat([df_var_hist, df_var_pred], ignore_index=True)
+            fig_var = px.line(df_var_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Variación Promedio (S/)"})
+            fig_var = embellecer_grafico(fig_var, "Predicción 2: Tendencia de Variación de Precios", "line")
+
+            # 3. Producto con Mayor Incremento Esperado
+            incrementos = []
+            for prod, grupo in df_filtrado.groupby("producto"):
+                serie_p = grupo.groupby("fecha")["precio_promedio"].mean().sort_index()
+                if len(serie_p) >= 1:
+                    actual = float(serie_p.iloc[-1])
+                    futuro = proyectar(serie_p, 8)
+                    inc = futuro - actual
+                    incrementos.append({
+                        "Producto": prod,
+                        "Precio actual (S/)": actual,
+                        "Precio predicho (S/)": futuro,
+                        "Incremento esperado (S/)": inc,
+                        "serie": serie_p
+                    })
+
+            df_incrementos = pd.DataFrame(incrementos)
+            if not df_incrementos.empty:
+                df_incrementos = df_incrementos.sort_values("Incremento esperado (S/)", ascending=False)
+                top_inc = df_incrementos.iloc[0]
+                prod_name = top_inc["Producto"]
+                inc_val = top_inc["Incremento esperado (S/)"]
+                serie_p_top = top_inc["serie"]
+
+                fechas_futuras_p = pd.date_range(start=serie_p_top.index.max() + pd.Timedelta(days=7), periods=8, freq="7D")
+                p_futuro = [proyectar(serie_p_top, i) for i in range(1, 9)]
+                df_p_hist = pd.DataFrame({"Fecha": serie_p_top.index, "Precio": serie_p_top.values, "Tipo": "Histórico"})
+                df_p_pred = pd.DataFrame({"Fecha": fechas_futuras_p, "Precio": p_futuro, "Tipo": "Proyectado"})
+                df_p_plot = pd.concat([df_p_hist, df_p_pred], ignore_index=True)
+
+                fig_prod = px.line(df_p_plot, x="Fecha", y="Precio", color="Tipo", line_dash="Tipo", labels={"Precio": "Precio (S/)"})
+                fig_prod = embellecer_grafico(fig_prod, f"Predicción 3: {prod_name} (Mayor Incremento Esperado)", "line")
+
+                st.info(f"[IA] El producto con **mayor incremento esperado** en las próximas 8 semanas es **{prod_name}** con un alza proyectada de **S/ {inc_val:.2f}**.")
+            else:
+                prod_name = "Sin datos"
+                inc_val = 0.0
+                fig_prod = px.line()
+                fig_prod = embellecer_grafico(fig_prod, "Predicción 3: Producto con Mayor Incremento Esperado", "line")
+
+            # 4. Diferencia Mayorista vs Minorista Futura
+            por_canal = df_filtrado.groupby(["fecha", "tipo_venta"])["precio_promedio"].mean().unstack()
+            if "Minorista" in por_canal.columns and "Mayorista" in por_canal.columns:
+                serie_diff = (por_canal["Minorista"] - por_canal["Mayorista"]).dropna().sort_index()
+                diff_futuro = [proyectar(serie_diff, i) for i in range(1, 9)]
+                df_diff_hist = pd.DataFrame({"Fecha": serie_diff.index, "Brecha": serie_diff.values, "Tipo": "Histórico"})
+                df_diff_pred = pd.DataFrame({"Fecha": fechas_futuras, "Brecha": diff_futuro, "Tipo": "Proyectado"})
+                df_diff_plot = pd.concat([df_diff_hist, df_diff_pred], ignore_index=True)
+                fig_diff = px.line(df_diff_plot, x="Fecha", y="Brecha", color="Tipo", line_dash="Tipo", labels={"Brecha": "Diferencia (S/)"})
+                fig_diff = embellecer_grafico(fig_diff, "Predicción 4: Diferencia Mayorista vs Minorista Futura", "line")
+            else:
+                fig_diff = px.line()
+                fig_diff = embellecer_grafico(fig_diff, "Predicción 4: Diferencia Mayorista vs Minorista Futura (Sin datos de ambos canales)", "line")
+
+            # Render en Cuadrícula
+            c1, c2 = st.columns(2)
+            with c1:
+                st.plotly_chart(fig_precio, use_container_width=True, theme=None)
+            with c2:
+                st.plotly_chart(fig_var, use_container_width=True, theme=None)
+
+            c3, c4 = st.columns(2)
+            with c3:
+                st.plotly_chart(fig_prod, use_container_width=True, theme=None)
+            with c4:
+                st.plotly_chart(fig_diff, use_container_width=True, theme=None)
+
+            # Tabla resumen de incrementos esperados
+            if not df_incrementos.empty:
+                st.markdown("###  Tabla de Predicciones por Producto")
+                tabla_resumen = df_incrementos.drop(columns=["serie"])
+                for c in ["Precio actual (S/)", "Precio predicho (S/)", "Incremento esperado (S/)"]:
+                    tabla_resumen[c] = tabla_resumen[c].map(lambda x: f"S/ {x:.2f}")
+                st.dataframe(tabla_resumen, use_container_width=True, hide_index=True)
+
+    elif pagina == "⑥ Capa Semántica & KPIs":
+        st.subheader("Capa Semántica & KPIs")
+        if df_filtrado.empty:
+            st.info("Carga datos al Data Warehouse primero o revisa la selección de tus filtros.")
         else:
-            fig_diff = px.line()
-            fig_diff = embellecer_grafico(fig_diff, "Prediccion 4: Diferencia Mayorista vs Minorista Futura (Sin datos de ambos canales)", "line")
-            
-        # Grid para Graficos Predictivos
-        cp1, cp2 = st.columns(2)
-        with cp1:
-            st.plotly_chart(fig_precio, use_container_width=True, theme=None)
-        with cp2:
-            st.plotly_chart(fig_var, use_container_width=True, theme=None)
-            
-        cp3, cp4 = st.columns(2)
-        with cp3:
-            st.plotly_chart(fig_prod, use_container_width=True, theme=None)
-        with cp4:
-            st.plotly_chart(fig_diff, use_container_width=True, theme=None)
-            
-        # Tabla predictiva
-        if not df_incrementos.empty:
-            st.markdown("### Tabla de Predicciones por Producto")
-            tabla_resumen = df_incrementos.drop(columns=["serie"])
-            for c in ["Precio actual (S/)", "Precio predicho (S/)", "Incremento esperado (S/)"]:
-                tabla_resumen[c] = tabla_resumen[c].map(lambda x: f"S/ {x:.2f}")
-            st.dataframe(tabla_resumen, use_container_width=True, hide_index=True)
+            avg_precio = df_filtrado["precio_promedio"].mean()
+            max_precio = df_filtrado["precio_maximo"].max()
+            min_precio = df_filtrado["precio_minimo"].min()
+            var_promedio = df_filtrado["variacion_precio"].mean()
+
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Precio Promedio General", f"S/ {avg_precio:.2f}", help="Meta: Mantener estabilidad de precios")
+            c2.metric("Precio Máximo Registrado", f"S/ {max_precio:.2f}", help="Meta: Identificar productos con precios elevados")
+            c3.metric("Precio Mínimo Registrado", f"S/ {min_precio:.2f}", help="Meta: Identificar productos con precios bajos")
+            c4.metric("Variación Promedio", f"S/ {var_promedio:.2f}", help="Meta: Reducir fluctuaciones excesivas")
+
+            st.markdown("### Capa Semántica - Datos Filtrados")
+            st.dataframe(df_filtrado, use_container_width=True, hide_index=True)
+
+    elif pagina == "⑦ Visualización BI":
+        st.subheader("Visualización BI")
+        if df_filtrado.empty:
+            st.warning("No hay datos para graficar con los filtros activos.")
+        else:
+            avg_precio = df_filtrado["precio_promedio"].mean()
+            max_precio = df_filtrado["precio_maximo"].max()
+            min_precio = df_filtrado["precio_minimo"].min()
+            var_promedio = df_filtrado["variacion_precio"].mean()
+
+            # Fila 1: Tarjetas KPI
+            c1, c2, c3, c4 = st.columns(4)
+            with c1:
+                st.markdown(
+                    f"""
+                    <div class="kpi-container" style="border-left: 5px solid #3b82f6;">
+                        <span class="kpi-title">Precio Promedio General</span>
+                        <h3 class="kpi-val">S/ {avg_precio:.2f}</h3>
+                        <span class="kpi-meta">Meta: Mantener estabilidad</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            with c2:
+                st.markdown(
+                    f"""
+                    <div class="kpi-container" style="border-left: 5px solid #10b981;">
+                        <span class="kpi-title">Precio Máximo Registrado</span>
+                        <h3 class="kpi-val">S/ {max_precio:.2f}</h3>
+                        <span class="kpi-meta">Meta: Identificar precios altos</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            with c3:
+                st.markdown(
+                    f"""
+                    <div class="kpi-container" style="border-left: 5px solid #8b5cf6;">
+                        <span class="kpi-title">Precio Mínimo Registrado</span>
+                        <h3 class="kpi-val">S/ {min_precio:.2f}</h3>
+                        <span class="kpi-meta">Meta: Identificar precios bajos</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            with c4:
+                st.markdown(
+                    f"""
+                    <div class="kpi-container" style="border-left: 5px solid #f97316;">
+                        <span class="kpi-title">Variación Promedio</span>
+                        <h3 class="kpi-val">S/ {var_promedio:.2f}</h3>
+                        <span class="kpi-meta">Meta: Reducir fluctuaciones</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            # Fila 2: Top productos por precio promedio
+            top = df_filtrado.groupby("producto", as_index=False)["precio_promedio"].mean().sort_values("precio_promedio", ascending=False).head(10)
+            fig_top = px.bar(top, x="producto", y="precio_promedio", labels={"producto": "Producto", "precio_promedio": "Precio Promedio (S/)"})
+            fig_top = embellecer_grafico(fig_top, "Top 10 Productos por Precio Promedio", "bar")
+            st.plotly_chart(fig_top, use_container_width=True, theme=None)
+
+            # Fila 3: Comparación mayorista vs minorista, evolución del precio promedio, y ranking
+            col_pie, col_line, col_table = st.columns([1, 1.2, 1.8])
+
+            with col_pie:
+                canales = df_filtrado.groupby("tipo_venta", as_index=False)["precio_promedio"].mean()
+                fig_pie = px.pie(canales, names="tipo_venta", values="precio_promedio")
+                fig_pie = embellecer_grafico(fig_pie, "Comparación Mayorista vs Minorista", "pie")
+                st.plotly_chart(fig_pie, use_container_width=True, theme=None)
+
+            with col_line:
+                evolucion = df_filtrado.groupby("fecha", as_index=False)["precio_promedio"].mean().sort_values("fecha")
+                evolucion["fecha_str"] = evolucion["fecha"].dt.strftime("%d-%m-%Y")
+                fig_line = px.line(evolucion, x="fecha_str", y="precio_promedio", markers=True, labels={"fecha_str": "Fecha", "precio_promedio": "Precio Promedio (S/)"})
+                fig_line = embellecer_grafico(fig_line, "Evolución del Precio Promedio", "line")
+                st.plotly_chart(fig_line, use_container_width=True, theme=None)
+
+            with col_table:
+                st.markdown("<h4 style='text-align: center; margin-bottom: 12px; font-weight: 700;'>Ranking de Productos por Precio Promedio</h4>", unsafe_allow_html=True)
+                ranking_df = df_filtrado.groupby(["producto", "tipo_venta", "unidad"]).agg({
+                    "precio_minimo": "min",
+                    "precio_promedio": "mean",
+                    "precio_maximo": "max",
+                    "variacion_precio": "mean"
+                }).reset_index().sort_values("precio_promedio", ascending=False)
+
+                ranking_df.columns = ["Producto", "Tipo de Venta", "Unidad", "Mínimo (S/)", "Promedio (S/)", "Máximo (S/)", "Variación (S/)"]
+                for c in ["Mínimo (S/)", "Promedio (S/)", "Máximo (S/)", "Variación (S/)"]:
+                    ranking_df[c] = ranking_df[c].map(lambda x: f"{x:.2f}" if pd.notna(x) else "-")
+
+                st.dataframe(ranking_df, use_container_width=True, hide_index=True)
+
+            # Fila 4: Predicciones de IA Integradas en Visualizacion BI
+            st.markdown("<hr style='border-color: #cbd5e1; margin: 40px 0 25px 0;'>", unsafe_allow_html=True)
+            st.markdown("<h3 style='font-weight: 800; color: #1e293b;'>Predicciones a Futuro de la Capa de IA (8 Semanas)</h3>", unsafe_allow_html=True)
+
+            # Preparamos las predicciones
+            df_filtrado["fecha"] = pd.to_datetime(df_filtrado["fecha"])
+
+            # 1. Serie Precio Promedio General
+            serie_precio = df_filtrado.groupby("fecha")["precio_promedio"].mean().sort_index()
+            fechas_futuras = pd.date_range(start=serie_precio.index.max() + pd.Timedelta(days=7), periods=8, freq="7D")
+
+            precio_futuro = [proyectar(serie_precio, i) for i in range(1, 9)]
+            df_precio_hist = pd.DataFrame({"Fecha": serie_precio.index, "Valor": serie_precio.values, "Tipo": "Historico"})
+            df_precio_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": precio_futuro, "Tipo": "Proyectado"})
+            df_precio_plot = pd.concat([df_precio_hist, df_precio_pred], ignore_index=True)
+            fig_precio = px.line(df_precio_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Precio Promedio (S/)"})
+            fig_precio = embellecer_grafico(fig_precio, "Prediccion 1: Precio Promedio Futuro", "line")
+
+            # 2. Serie Tendencia de Variacion
+            serie_var = df_filtrado.groupby("fecha")["variacion_precio"].mean().sort_index()
+            var_futuro = [proyectar(serie_var, i) for i in range(1, 9)]
+            df_var_hist = pd.DataFrame({"Fecha": serie_var.index, "Valor": serie_var.values, "Tipo": "Historico"})
+            df_var_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": var_futuro, "Tipo": "Proyectado"})
+            df_var_plot = pd.concat([df_var_hist, df_var_pred], ignore_index=True)
+            fig_var = px.line(df_var_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Variacion Promedio (S/)"})
+            fig_var = embellecer_grafico(fig_var, "Prediccion 2: Tendencia de Variacion de Precios", "line")
+
+            # 3. Producto con Mayor Incremento Esperado
+            incrementos = []
+            for prod, grupo in df_filtrado.groupby("producto"):
+                serie_p = grupo.groupby("fecha")["precio_promedio"].mean().sort_index()
+                if len(serie_p) >= 1:
+                    actual = float(serie_p.iloc[-1])
+                    futuro = proyectar(serie_p, 8)
+                    inc = futuro - actual
+                    incrementos.append({
+                        "Producto": prod,
+                        "Precio actual (S/)": actual,
+                        "Precio predicho (S/)": futuro,
+                        "Incremento esperado (S/)": inc,
+                        "serie": serie_p
+                    })
+
+            df_incrementos = pd.DataFrame(incrementos)
+            if not df_incrementos.empty:
+                df_incrementos = df_incrementos.sort_values("Incremento esperado (S/)", ascending=False)
+                top_inc = df_incrementos.iloc[0]
+                prod_name = top_inc["Producto"]
+                inc_val = top_inc["Incremento esperado (S/)"]
+                serie_p_top = top_inc["serie"]
+
+                fechas_futuras_p = pd.date_range(start=serie_p_top.index.max() + pd.Timedelta(days=7), periods=8, freq="7D")
+                p_futuro = [proyectar(serie_p_top, i) for i in range(1, 9)]
+                df_p_hist = pd.DataFrame({"Fecha": serie_p_top.index, "Precio": serie_p_top.values, "Tipo": "Historico"})
+                df_p_pred = pd.DataFrame({"Fecha": fechas_futuras_p, "Precio": p_futuro, "Tipo": "Proyectado"})
+                df_p_plot = pd.concat([df_p_hist, df_p_pred], ignore_index=True)
+
+                fig_prod = px.line(df_p_plot, x="Fecha", y="Precio", color="Tipo", line_dash="Tipo", labels={"Precio": "Precio (S/)"})
+                fig_prod = embellecer_grafico(fig_prod, f"Prediccion 3: {prod_name} (Mayor Incremento Esperado)", "line")
+
+                st.info(f"[IA] El producto con mayor incremento esperado en las proximas 8 semanas es {prod_name} con un alza proyectada de S/ {inc_val:.2f}.")
+            else:
+                prod_name = "Sin datos"
+                inc_val = 0.0
+                fig_prod = px.line()
+                fig_prod = embellecer_grafico(fig_prod, "Prediccion 3: Producto con Mayor Incremento Esperado", "line")
+
+            # 4. Diferencia Mayorista vs Minorista Futura
+            por_canal = df_filtrado.groupby(["fecha", "tipo_venta"])["precio_promedio"].mean().unstack()
+            if "Minorista" in por_canal.columns and "Mayorista" in por_canal.columns:
+                serie_diff = (por_canal["Minorista"] - por_canal["Mayorista"]).dropna().sort_index()
+                diff_futuro = [proyectar(serie_diff, i) for i in range(1, 9)]
+                df_diff_hist = pd.DataFrame({"Fecha": serie_diff.index, "Brecha": serie_diff.values, "Tipo": "Historico"})
+                df_diff_pred = pd.DataFrame({"Fecha": fechas_futuras, "Brecha": diff_futuro, "Tipo": "Proyectado"})
+                df_diff_plot = pd.concat([df_diff_hist, df_diff_pred], ignore_index=True)
+                fig_diff = px.line(df_diff_plot, x="Fecha", y="Brecha", color="Tipo", line_dash="Tipo", labels={"Brecha": "Diferencia (S/)"})
+                fig_diff = embellecer_grafico(fig_diff, "Prediccion 4: Diferencia Mayorista vs Minorista Futura", "line")
+            else:
+                fig_diff = px.line()
+                fig_diff = embellecer_grafico(fig_diff, "Prediccion 4: Diferencia Mayorista vs Minorista Futura (Sin datos de ambos canales)", "line")
+
+            # Grid para Graficos Predictivos
+            cp1, cp2 = st.columns(2)
+            with cp1:
+                st.plotly_chart(fig_precio, use_container_width=True, theme=None)
+            with cp2:
+                st.plotly_chart(fig_var, use_container_width=True, theme=None)
+
+            cp3, cp4 = st.columns(2)
+            with cp3:
+                st.plotly_chart(fig_prod, use_container_width=True, theme=None)
+            with cp4:
+                st.plotly_chart(fig_diff, use_container_width=True, theme=None)
+
+            # Tabla predictiva
+            if not df_incrementos.empty:
+                st.markdown("### Tabla de Predicciones por Producto")
+                tabla_resumen = df_incrementos.drop(columns=["serie"])
+                for c in ["Precio actual (S/)", "Precio predicho (S/)", "Incremento esperado (S/)"]:
+                    tabla_resumen[c] = tabla_resumen[c].map(lambda x: f"S/ {x:.2f}")
+                st.dataframe(tabla_resumen, use_container_width=True, hide_index=True)
+
 
 
 # ==============================================================================

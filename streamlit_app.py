@@ -56,63 +56,43 @@ def aplicar_estilos() -> None:
             [data-testid="stSidebar"] * {
                 color: #f1f5f9 !important;
             }
-            /* Hide the radio input circle completely and aggressively */
-            [data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"] {
-                display: none !important;
-            }
-            [data-testid="stSidebar"] div[role="radiogroup"] [data-testid="stRadioCircle"] {
-                display: none !important;
-            }
-            [data-testid="stSidebar"] div[role="radiogroup"] label > div:first-of-type {
-                display: none !important;
-            }
-            [data-testid="stSidebar"] div[role="radiogroup"] label > div:not([data-testid="stMarkdownContainer"]) {
-                display: none !important;
-            }
-            [data-testid="stSidebar"] div[role="radiogroup"] div[data-checked] div:first-of-type {
-                display: none !important;
-            }
-            
-            /* Style the wrapper label to look like a button menu item */
-            [data-testid="stSidebar"] div[role="radiogroup"] label {
-                display: flex !important;
-                align-items: center !important;
+            /* Sidebar navigation buttons custom styling */
+            [data-testid="stSidebar"] div.stButton > button[kind="secondary"] {
                 background-color: transparent !important;
                 color: #cbd5e1 !important;
+                border: 1px solid transparent !important;
+                text-align: left !important;
                 padding: 10px 16px !important;
                 font-size: 15px !important;
                 font-weight: 500 !important;
                 border-radius: 6px !important;
-                margin-bottom: 4px !important;
-                border: 1px solid transparent !important;
-                cursor: pointer !important;
                 width: 100% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                box-shadow: none !important;
                 transition: background 0.2s, color 0.2s !important;
-                box-sizing: border-box !important;
             }
-            [data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+            [data-testid="stSidebar"] div.stButton > button[kind="secondary"]:hover {
                 background-color: rgba(59, 130, 246, 0.15) !important;
                 color: #ffffff !important;
             }
-            /* Active option (checked) */
-            [data-testid="stSidebar"] div[role="radiogroup"] [data-checked="true"] label {
+            
+            [data-testid="stSidebar"] div.stButton > button[kind="primary"] {
                 background-color: rgba(59, 130, 246, 0.25) !important;
                 color: #38bdf8 !important;
+                border: 1px solid transparent !important;
                 border-left: 4px solid #38bdf8 !important;
-                padding-left: 12px !important;
-            }
-            /* Add the category title before the second option */
-            [data-testid="stSidebar"] div[role="radiogroup"] > div:nth-child(2)::before {
-                content: "7 PASOS DEL FLUJO BI";
-                display: block;
-                font-size: 11px;
-                font-weight: 700;
-                color: #94a3b8;
-                text-transform: uppercase;
-                margin-top: 18px;
-                margin-bottom: 12px;
-                letter-spacing: 0.05em;
-                padding-left: 5px;
+                text-align: left !important;
+                padding: 10px 16px 10px 12px !important;
+                font-size: 15px !important;
+                font-weight: 600 !important;
+                border-radius: 6px !important;
+                width: 100% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                box-shadow: none !important;
             }
             
             /* Header and Titles */
@@ -649,20 +629,41 @@ df_filtrado = pd.DataFrame()
 with st.sidebar:
     if os.path.exists("front-end/img/logo.png"):
         st.image("front-end/img/logo.png", use_container_width=True)
-    pagina = st.radio(
-        "Modulo",
-        [
-            "⊞ Pantalla General",
-            "① Fuentes de Datos",
-            "② Staging Area",
-            "③ Proceso ETL",
-            "④ Data Warehouse",
-            "⑤ Capa de IA",
-            "⑥ Capa Semántica & KPIs",
-            "⑦ Visualización BI",
-        ],
-        label_visibility="collapsed"
-    )
+    if "pagina" not in st.session_state:
+        st.session_state.pagina = "⊞ Pantalla General"
+
+    if st.button(
+        "⊞ Pantalla General",
+        type="primary" if st.session_state.pagina == "⊞ Pantalla General" else "secondary",
+        key="nav_pantalla_general",
+        use_container_width=True
+    ):
+        st.session_state.pagina = "⊞ Pantalla General"
+        st.rerun()
+        
+    st.markdown("<div style='font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-top: 18px; margin-bottom: 12px; letter-spacing: 0.05em; padding-left: 5px;'>7 PASOS DEL FLUJO BI</div>", unsafe_allow_html=True)
+    
+    paginas_flujo = [
+        ("① Fuentes de Datos", "nav_fuentes"),
+        ("② Staging Area", "nav_staging"),
+        ("③ Proceso ETL", "nav_etl"),
+        ("④ Data Warehouse", "nav_dw"),
+        ("⑤ Capa de IA", "nav_ia"),
+        ("⑥ Capa Semántica & KPIs", "nav_kpis"),
+        ("⑦ Visualización BI", "nav_visualizacion")
+    ]
+    
+    for label, key in paginas_flujo:
+        if st.button(
+            label,
+            type="primary" if st.session_state.pagina == label else "secondary",
+            key=key,
+            use_container_width=True
+        ):
+            st.session_state.pagina = label
+            st.rerun()
+            
+    pagina = st.session_state.pagina
 
     # Inyectar filtros de la barra lateral si hay datos y estamos en módulos de visualización/IA
     if not df_analisis.empty and pagina in ["⑤ Capa de IA", "⑥ Capa Semántica & KPIs", "⑦ Visualización BI"]:

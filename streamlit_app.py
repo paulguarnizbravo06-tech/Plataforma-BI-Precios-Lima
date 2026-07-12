@@ -56,14 +56,49 @@ def aplicar_estilos() -> None:
             [data-testid="stSidebar"] * {
                 color: #f1f5f9 !important;
             }
-            [data-testid="stSidebar"] .stRadio label {
-                padding: 8px 12px;
-                border-radius: 6px;
-                margin-bottom: 4px;
-                transition: background 0.2s;
+            /* Hide the radio input circle completely */
+            [data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"] {
+                display: none !important;
             }
-            [data-testid="stSidebar"] .stRadio label:hover {
-                background: rgba(59, 130, 246, 0.2);
+            /* Style the wrapper label to look like a button menu item */
+            [data-testid="stSidebar"] div[role="radiogroup"] label {
+                display: block !important;
+                background-color: transparent !important;
+                color: #cbd5e1 !important;
+                padding: 10px 16px !important;
+                font-size: 15px !important;
+                font-weight: 500 !important;
+                border-radius: 6px !important;
+                margin-bottom: 4px !important;
+                border: 1px solid transparent !important;
+                cursor: pointer !important;
+                width: 100% !important;
+                transition: background 0.2s, color 0.2s !important;
+                box-sizing: border-box !important;
+            }
+            [data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+                background-color: rgba(59, 130, 246, 0.15) !important;
+                color: #ffffff !important;
+            }
+            /* Active option (checked) */
+            [data-testid="stSidebar"] div[role="radiogroup"] [data-checked="true"] label {
+                background-color: rgba(59, 130, 246, 0.25) !important;
+                color: #38bdf8 !important;
+                border-left: 4px solid #38bdf8 !important;
+                padding-left: 12px !important;
+            }
+            /* Add the category title before the second option */
+            [data-testid="stSidebar"] div[role="radiogroup"] > div:nth-child(2)::before {
+                content: "7 PASOS DEL FLUJO BI";
+                display: block;
+                font-size: 11px;
+                font-weight: 700;
+                color: #94a3b8;
+                text-transform: uppercase;
+                margin-top: 18px;
+                margin-bottom: 12px;
+                letter-spacing: 0.05em;
+                padding-left: 5px;
             }
             
             /* Header and Titles */
@@ -605,25 +640,20 @@ with st.sidebar:
     pagina = st.radio(
         "Modulo",
         [
-            "Pantalla General",
-            "1. Fuentes de Datos",
-            "2. Staging Area",
-            "3. Proceso ETL",
-            "4. Data Warehouse",
-            "5. Capa de IA",
-            "6. Capa Semantica & KPIs",
-            "7. Visualizacion BI",
+            "⊞ Pantalla General",
+            "① Fuentes de Datos",
+            "② Staging Area",
+            "③ Proceso ETL",
+            "④ Data Warehouse",
+            "⑤ Capa de IA",
+            "⑥ Capa Semántica & KPIs",
+            "⑦ Visualización BI",
         ],
+        label_visibility="collapsed"
     )
-    if st.button("Crear/actualizar tablas Supabase"):
-        try:
-            ejecutar_sql_schema(engine)
-            st.success("Tablas y vistas verificadas en Supabase.")
-        except Exception as exc:
-            st.error(f"No se pudo ejecutar el schema: {exc}")
 
     # Inyectar filtros de la barra lateral si hay datos y estamos en módulos de visualización/IA
-    if not df_analisis.empty and pagina in ["5. Capa de IA", "6. Capa Semantica & KPIs", "7. Visualizacion BI"]:
+    if not df_analisis.empty and pagina in ["⑤ Capa de IA", "⑥ Capa Semántica & KPIs", "⑦ Visualización BI"]:
         st.markdown("---")
         st.markdown("### 🎯 Zona de Filtros")
         
@@ -687,7 +717,7 @@ if "ok_df" not in st.session_state:
 if "hechos_df" not in st.session_state:
     st.session_state.hechos_df = pd.DataFrame()
 
-if pagina == "Pantalla General":
+if pagina == "⊞ Pantalla General":
     st.markdown(
         """
         <div class="bi-topbar">
@@ -717,7 +747,7 @@ if pagina == "Pantalla General":
                 unsafe_allow_html=True,
             )
 
-elif pagina == "1. Fuentes de Datos":
+elif pagina == "① Fuentes de Datos":
     st.subheader("Fuentes de datos")
     archivo = st.file_uploader("Carga archivo SISAP en Excel o CSV", type=["xlsx", "xls", "csv"])
     if archivo:
@@ -727,7 +757,7 @@ elif pagina == "1. Fuentes de Datos":
         st.success(f"Registros leidos: {len(df)} | Validos: {len(st.session_state.ok_df)}")
         st.dataframe(df.head(100), use_container_width=True)
 
-elif pagina == "2. Staging Area":
+elif pagina == "② Staging Area":
     st.subheader("Staging Area")
     raw_df = st.session_state.raw_df
     ok_df = st.session_state.ok_df
@@ -740,7 +770,7 @@ elif pagina == "2. Staging Area":
         col3.metric("Errores", int((raw_df["estado"] == "ERROR").sum()))
         st.dataframe(raw_df.head(100), use_container_width=True)
 
-elif pagina == "3. Proceso ETL":
+elif pagina == "③ Proceso ETL":
     st.subheader("Proceso ETL")
     ok_df = st.session_state.ok_df
     if ok_df.empty:
@@ -755,8 +785,17 @@ elif pagina == "3. Proceso ETL":
         st.dataframe(hechos.head(100), use_container_width=True)
         st.success("ETL preparado. Continua al paso 4 para cargar el Data Warehouse.")
 
-elif pagina == "4. Data Warehouse":
+elif pagina == "④ Data Warehouse":
     st.subheader("Data Warehouse en Supabase")
+    
+    # Inicialización local/remota de tablas Supabase (trasladada del sidebar)
+    if st.button("Crear / Actualizar estructura de tablas en Supabase"):
+        try:
+            ejecutar_sql_schema(engine)
+            st.success("Tablas y vistas verificadas en Supabase.")
+        except Exception as exc:
+            st.error(f"Error al inicializar las tablas: {exc}")
+            
     ok_df = st.session_state.ok_df
     hechos = st.session_state.hechos_df
     if ok_df.empty or hechos.empty:
@@ -778,7 +817,7 @@ elif pagina == "4. Data Warehouse":
         st.metric("Filas analiticas", len(df))
         st.dataframe(df.head(200), use_container_width=True)
 
-elif pagina == "5. Capa de IA":
+elif pagina == "⑤ Capa de IA":
     st.subheader("💡 Capa de Inteligencia Artificial (Predicciones a 8 Semanas)")
     if df_filtrado.empty:
         st.warning("No hay datos suficientes para calcular las predicciones con los filtros activos.")
@@ -881,7 +920,7 @@ elif pagina == "5. Capa de IA":
                 tabla_resumen[c] = tabla_resumen[c].map(lambda x: f"S/ {x:.2f}")
             st.dataframe(tabla_resumen, use_container_width=True, hide_index=True)
 
-elif pagina == "6. Capa Semantica & KPIs":
+elif pagina == "⑥ Capa Semántica & KPIs":
     st.subheader("Capa Semántica & KPIs")
     if df_filtrado.empty:
         st.info("Carga datos al Data Warehouse primero o revisa la selección de tus filtros.")
@@ -900,7 +939,7 @@ elif pagina == "6. Capa Semantica & KPIs":
         st.markdown("### Capa Semántica - Datos Filtrados")
         st.dataframe(df_filtrado, use_container_width=True, hide_index=True)
 
-elif pagina == "7. Visualizacion BI":
+elif pagina == "⑦ Visualización BI":
     st.subheader("Visualización BI")
     if df_filtrado.empty:
         st.warning("No hay datos para graficar con los filtros activos.")

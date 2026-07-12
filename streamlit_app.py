@@ -688,9 +688,11 @@ def embellecer_grafico(fig, titulo, tipo="bar"):
         },
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Outfit, sans-serif", size=10, color="#475569"),
+        font=dict(family="Outfit, sans-serif", size=10, color="#1e293b"),
         margin=dict(l=20, r=20, t=50, b=20),
     )
+    fig.update_xaxes(title_font=dict(color="#1e293b"), tickfont=dict(color="#1e293b"))
+    fig.update_yaxes(title_font=dict(color="#1e293b"), tickfont=dict(color="#1e293b"))
     if tipo == "bar":
         fig.update_traces(marker_color='#3b82f6', marker_line_color='#1d4ed8', marker_line_width=1, opacity=0.85)
         fig.update_xaxes(showgrid=False, title_text="")
@@ -1246,15 +1248,15 @@ elif pagina == "⑤ Capa de IA":
         # Render en Cuadrícula
         c1, c2 = st.columns(2)
         with c1:
-            st.plotly_chart(fig_precio, use_container_width=True)
+            st.plotly_chart(fig_precio, use_container_width=True, theme=None)
         with c2:
-            st.plotly_chart(fig_var, use_container_width=True)
+            st.plotly_chart(fig_var, use_container_width=True, theme=None)
             
         c3, c4 = st.columns(2)
         with c3:
-            st.plotly_chart(fig_prod, use_container_width=True)
+            st.plotly_chart(fig_prod, use_container_width=True, theme=None)
         with c4:
-            st.plotly_chart(fig_diff, use_container_width=True)
+            st.plotly_chart(fig_diff, use_container_width=True, theme=None)
             
         # Tabla resumen de incrementos esperados
         if not df_incrementos.empty:
@@ -1344,7 +1346,7 @@ elif pagina == "⑦ Visualización BI":
         top = df_filtrado.groupby("producto", as_index=False)["precio_promedio"].mean().sort_values("precio_promedio", ascending=False).head(10)
         fig_top = px.bar(top, x="producto", y="precio_promedio", labels={"producto": "Producto", "precio_promedio": "Precio Promedio (S/)"})
         fig_top = embellecer_grafico(fig_top, "Top 10 Productos por Precio Promedio", "bar")
-        st.plotly_chart(fig_top, use_container_width=True)
+        st.plotly_chart(fig_top, use_container_width=True, theme=None)
 
         # Fila 3: Comparación mayorista vs minorista, evolución del precio promedio, y ranking
         col_pie, col_line, col_table = st.columns([1, 1.2, 1.8])
@@ -1353,14 +1355,14 @@ elif pagina == "⑦ Visualización BI":
             canales = df_filtrado.groupby("tipo_venta", as_index=False)["precio_promedio"].mean()
             fig_pie = px.pie(canales, names="tipo_venta", values="precio_promedio")
             fig_pie = embellecer_grafico(fig_pie, "Comparación Mayorista vs Minorista", "pie")
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_pie, use_container_width=True, theme=None)
 
         with col_line:
             evolucion = df_filtrado.groupby("fecha", as_index=False)["precio_promedio"].mean().sort_values("fecha")
             evolucion["fecha_str"] = evolucion["fecha"].dt.strftime("%d-%m-%Y")
             fig_line = px.line(evolucion, x="fecha_str", y="precio_promedio", markers=True, labels={"fecha_str": "Fecha", "precio_promedio": "Precio Promedio (S/)"})
             fig_line = embellecer_grafico(fig_line, "Evolución del Precio Promedio", "line")
-            st.plotly_chart(fig_line, use_container_width=True)
+            st.plotly_chart(fig_line, use_container_width=True, theme=None)
 
         with col_table:
             st.markdown("<h4 style='text-align: center; margin-bottom: 12px; font-weight: 700;'>Ranking de Productos por Precio Promedio</h4>", unsafe_allow_html=True)
@@ -1461,15 +1463,15 @@ elif pagina == "⑦ Visualización BI":
         # Grid para Graficos Predictivos
         cp1, cp2 = st.columns(2)
         with cp1:
-            st.plotly_chart(fig_precio, use_container_width=True)
+            st.plotly_chart(fig_precio, use_container_width=True, theme=None)
         with cp2:
-            st.plotly_chart(fig_var, use_container_width=True)
+            st.plotly_chart(fig_var, use_container_width=True, theme=None)
             
         cp3, cp4 = st.columns(2)
         with cp3:
-            st.plotly_chart(fig_prod, use_container_width=True)
+            st.plotly_chart(fig_prod, use_container_width=True, theme=None)
         with cp4:
-            st.plotly_chart(fig_diff, use_container_width=True)
+            st.plotly_chart(fig_diff, use_container_width=True, theme=None)
             
         # Tabla predictiva
         if not df_incrementos.empty:

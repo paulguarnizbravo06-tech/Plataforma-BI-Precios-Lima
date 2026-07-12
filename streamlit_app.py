@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 import os
@@ -684,7 +685,7 @@ with st.sidebar:
     # Inyectar filtros de la barra lateral si hay datos y estamos en módulos de visualización/IA
     if not df_analisis.empty and pagina in ["⑤ Capa de IA", "⑥ Capa Semántica & KPIs", "⑦ Visualización BI"]:
         st.markdown("---")
-        st.markdown("### 🎯 Zona de Filtros")
+        st.markdown("###  Zona de Filtros")
         
         # 1. Rango de Fechas
         min_date = df_analisis["fecha"].min().date()
@@ -852,89 +853,86 @@ elif pagina == "④ Data Warehouse":
         """,
         unsafe_allow_html=True
     )
-
     # 2. Snowflake Diagram (Modelo Copo de Nieve)
     st.markdown(
-        """
-        <div style="background-color: #1e293b; padding: 22px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-            <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 18px; display: flex; align-items: center; gap: 6px;">❄️ Modelo Lógico: Copo de Nieve (Snowflake Schema)</div>
-            <div style="display: grid; grid-template-columns: 1.2fr 1.5fr 1.2fr; gap: 20px; align-items: center;">
-                
-                <!-- Columna Izquierda: Dim Producto Normalizada (Snowflake) -->
-                <div style="display: flex; flex-direction: column; gap: 15px;">
-                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                        <span style="color: #a855f7; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_producto</span>
-                        <hr style="margin: 6px 0; border-color: #1e293b;">
-                        <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-                            🔑 <span style="color: #cbd5e1;">producto_id</span> (PK)<br>
-                            # <span style="color: #cbd5e1;">producto</span> (Nombre)<br>
-                            🔗 <span style="color: #cbd5e1;">grupo_id</span> (FK a Grupo)
-                        </div>
-                    </div>
-                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                        <span style="color: #a855f7; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_grupo_producto</span>
-                        <hr style="margin: 6px 0; border-color: #1e293b;">
-                        <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-                            🔑 <span style="color: #cbd5e1;">grupo_id</span> (PK)<br>
-                            # <span style="color: #cbd5e1;">grupo_nombre</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Columna Central: Tabla de Hechos (Fact Precios) -->
-                <div style="background: #1e3a8a; border: 2px solid #3b82f6; border-radius: 10px; padding: 18px; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25);">
-                    <span style="color: #38bdf8; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: .02em;">fact_precios</span>
-                    <div style="font-size: 9px; color: #93c5fd; text-transform: uppercase; font-weight: 600; margin-top: 2px;">Tabla de Hechos (Métricas)</div>
-                    <hr style="margin: 8px 0; border-color: #2563eb;">
-                    <div style="font-size: 11px; color: #dbeafe; line-height: 1.5;">
-                        🔗 <span style="color: #ffffff; font-weight: 600;">producto_id</span> (FK)<br>
-                        🔗 <span style="color: #ffffff; font-weight: 600;">mercado_id</span> (FK)<br>
-                        🔗 <span style="color: #ffffff; font-weight: 600;">fecha_id</span> (FK)<br>
-                        🔗 <span style="color: #ffffff; font-weight: 600;">tipo_venta_id</span> (FK)<br>
-                        💰 <span style="color: #cbd5e1;">precio_promedio</span><br>
-                        💰 <span style="color: #cbd5e1;">precio_minimo</span><br>
-                        💰 <span style="color: #cbd5e1;">precio_maximo</span><br>
-                        💰 <span style="color: #cbd5e1;">variacion_precio</span>
-                    </div>
-                </div>
-                
-                <!-- Columna Derecha: Mercado Normalizado (Snowflake) y Fecha -->
-                <div style="display: flex; flex-direction: column; gap: 15px;">
-                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                        <span style="color: #10b981; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_mercado</span>
-                        <hr style="margin: 6px 0; border-color: #1e293b;">
-                        <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-                            🔑 <span style="color: #cbd5e1;">mercado_id</span> (PK)<br>
-                            # <span style="color: #cbd5e1;">mercado</span> (Nombre)<br>
-                            🔗 <span style="color: #cbd5e1;">tipo_mercado_id</span> (FK)
-                        </div>
-                    </div>
-                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                        <span style="color: #10b981; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_tipo_mercado</span>
-                        <hr style="margin: 6px 0; border-color: #1e293b;">
-                        <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-                            🔑 <span style="color: #cbd5e1;">tipo_mercado_id</span> (PK)<br>
-                            # <span style="color: #cbd5e1;">tipo</span> (Mayorista/Minorista)
-                        </div>
-                    </div>
-                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                        <span style="color: #f59e0b; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_fecha</span>
-                        <hr style="margin: 6px 0; border-color: #1e293b;">
-                        <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-                            🔑 <span style="color: #cbd5e1;">fecha_id</span> (PK)<br>
-                            # <span style="color: #cbd5e1;">fecha</span> (Date)<br>
-                            # <span style="color: #cbd5e1;">mes</span> (1-12)<br>
-                            # <span style="color: #cbd5e1;">anio</span>
-                        </div>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-        """,
+        """<div style="background-color: #1e293b; padding: 22px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+<div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 18px; display: flex; align-items: center; gap: 6px;">[Copo de Nieve] Modelo Logico: Copo de Nieve (Snowflake Schema)</div>
+<div style="display: grid; grid-template-columns: 1.2fr 1.5fr 1.2fr; gap: 20px; align-items: center;">
+
+<!-- Columna Izquierda: Dim Producto Normalizada (Snowflake) -->
+<div style="display: flex; flex-direction: column; gap: 15px;">
+<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+<span style="color: #a855f7; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_producto</span>
+<hr style="margin: 6px 0; border-color: #1e293b;">
+<div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
+PK <span style="color: #cbd5e1;">producto_id</span> (PK)<br>
+# <span style="color: #cbd5e1;">producto</span> (Nombre)<br>
+FK <span style="color: #cbd5e1;">grupo_id</span> (FK a Grupo)
+</div>
+</div>
+<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+<span style="color: #a855f7; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_grupo_producto</span>
+<hr style="margin: 6px 0; border-color: #1e293b;">
+<div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
+PK <span style="color: #cbd5e1;">grupo_id</span> (PK)<br>
+# <span style="color: #cbd5e1;">grupo_nombre</span>
+</div>
+</div>
+</div>
+
+<!-- Columna Central: Tabla de Hechos (Fact Precios) -->
+<div style="background: #1e3a8a; border: 2px solid #3b82f6; border-radius: 10px; padding: 18px; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25);">
+<span style="color: #38bdf8; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: .02em;">fact_precios</span>
+<div style="font-size: 9px; color: #93c5fd; text-transform: uppercase; font-weight: 600; margin-top: 2px;">Tabla de Hechos (Metricas)</div>
+<hr style="margin: 8px 0; border-color: #2563eb;">
+<div style="font-size: 11px; color: #dbeafe; line-height: 1.5;">
+FK <span style="color: #ffffff; font-weight: 600;">producto_id</span> (FK)<br>
+FK <span style="color: #ffffff; font-weight: 600;">mercado_id</span> (FK)<br>
+FK <span style="color: #ffffff; font-weight: 600;">fecha_id</span> (FK)<br>
+FK <span style="color: #ffffff; font-weight: 600;">tipo_venta_id</span> (FK)<br>
+S/. <span style="color: #cbd5e1;">precio_promedio</span><br>
+S/. <span style="color: #cbd5e1;">precio_minimo</span><br>
+S/. <span style="color: #cbd5e1;">precio_maximo</span><br>
+S/. <span style="color: #cbd5e1;">variacion_precio</span>
+</div>
+</div>
+
+<!-- Columna Derecha: Mercado Normalizado (Snowflake) y Fecha -->
+<div style="display: flex; flex-direction: column; gap: 15px;">
+<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+<span style="color: #10b981; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_mercado</span>
+<hr style="margin: 6px 0; border-color: #1e293b;">
+<div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
+PK <span style="color: #cbd5e1;">mercado_id</span> (PK)<br>
+# <span style="color: #cbd5e1;">mercado</span> (Nombre)<br>
+FK <span style="color: #cbd5e1;">tipo_mercado_id</span> (FK)
+</div>
+</div>
+<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+<span style="color: #10b981; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_tipo_mercado</span>
+<hr style="margin: 6px 0; border-color: #1e293b;">
+<div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
+PK <span style="color: #cbd5e1;">tipo_mercado_id</span> (PK)<br>
+# <span style="color: #cbd5e1;">tipo</span> (Mayorista/Minorista)
+</div>
+</div>
+<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+<span style="color: #f59e0b; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_fecha</span>
+<hr style="margin: 6px 0; border-color: #1e293b;">
+<div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
+PK <span style="color: #cbd5e1;">fecha_id</span> (PK)<br>
+# <span style="color: #cbd5e1;">fecha</span> (Date)<br>
+# <span style="color: #cbd5e1;">mes</span> (1-12)<br>
+# <span style="color: #cbd5e1;">anio</span>
+</div>
+</div>
+</div>
+
+</div>
+</div>""",
         unsafe_allow_html=True
     )
-    
+
     st.markdown("### Acciones de Carga y Mantenimiento")
     
     ok_df = st.session_state.ok_df
@@ -946,7 +944,7 @@ elif pagina == "④ Data Warehouse":
         if st.button("Crear / Actualizar estructura de tablas en Supabase", use_container_width=True):
             try:
                 ejecutar_sql_schema(engine)
-                st.success("Estructura física de tablas verificada con éxito en Supabase.")
+                st.success("Estructura fisica de tablas verificada con exito en Supabase.")
                 st.rerun()
             except Exception as exc:
                 st.error(f"Error al inicializar las tablas: {exc}")
@@ -967,11 +965,11 @@ elif pagina == "④ Data Warehouse":
             if st.button("Reconstruir Tablas (Vaciar Supabase)", use_container_width=True):
                 try:
                     ejecutar_sql_schema(engine)
-                    st.success("Tablas re-creadas con éxito (base de datos vaciada).")
+                    st.success("Tablas re-creadas con exito (base de datos vaciada).")
                     st.rerun()
                 except Exception as exc:
                     st.error(f"Error al vaciar: {exc}")
-
+                    
     df = df_analisis
     if df.empty:
         st.info("Aun no hay datos en la vista vw_capa_semantica_bi.")
@@ -980,7 +978,7 @@ elif pagina == "④ Data Warehouse":
         st.dataframe(df.head(200), use_container_width=True)
 
 elif pagina == "⑤ Capa de IA":
-    st.subheader("💡 Capa de Inteligencia Artificial (Predicciones a 8 Semanas)")
+    st.subheader("Capa de Inteligencia Artificial (Predicciones a 8 Semanas)")
     if df_filtrado.empty:
         st.warning("No hay datos suficientes para calcular las predicciones con los filtros activos.")
     else:
@@ -992,7 +990,7 @@ elif pagina == "⑤ Capa de IA":
         fechas_futuras = pd.date_range(start=serie_precio.index.max() + pd.Timedelta(days=7), periods=8, freq="7D")
         
         precio_futuro = [proyectar(serie_precio, i) for i in range(1, 9)]
-        df_precio_hist = pd.DataFrame({"Fecha": serie_precio.index, "Valor": serie_precio.values, "Tipo": "Histórico"})
+        df_precio_hist = pd.DataFrame({"Fecha": serie_precio.index, "Valor": serie_precio.values, "Tipo": "Historico"})
         df_precio_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": precio_futuro, "Tipo": "Proyectado"})
         df_precio_plot = pd.concat([df_precio_hist, df_precio_pred], ignore_index=True)
         fig_precio = px.line(df_precio_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Precio Promedio (S/)"})
@@ -1040,7 +1038,7 @@ elif pagina == "⑤ Capa de IA":
             fig_prod = px.line(df_p_plot, x="Fecha", y="Precio", color="Tipo", line_dash="Tipo", labels={"Precio": "Precio (S/)"})
             fig_prod = embellecer_grafico(fig_prod, f"Predicción 3: {prod_name} (Mayor Incremento Esperado)", "line")
             
-            st.info(f"💡 El producto con **mayor incremento esperado** en las próximas 8 semanas es **{prod_name}** con un alza proyectada de **S/ {inc_val:.2f}**.")
+            st.info(f"[IA] El producto con **mayor incremento esperado** en las próximas 8 semanas es **{prod_name}** con un alza proyectada de **S/ {inc_val:.2f}**.")
         else:
             prod_name = "Sin datos"
             inc_val = 0.0
@@ -1076,7 +1074,7 @@ elif pagina == "⑤ Capa de IA":
             
         # Tabla resumen de incrementos esperados
         if not df_incrementos.empty:
-            st.markdown("### 📊 Tabla de Predicciones por Producto")
+            st.markdown("###  Tabla de Predicciones por Producto")
             tabla_resumen = df_incrementos.drop(columns=["serie"])
             for c in ["Precio actual (S/)", "Precio predicho (S/)", "Incremento esperado (S/)"]:
                 tabla_resumen[c] = tabla_resumen[c].map(lambda x: f"S/ {x:.2f}")

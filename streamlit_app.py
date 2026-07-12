@@ -200,27 +200,27 @@ def aplicar_estilos() -> None:
                 border-radius: 4px;
             }
             .bi-step-kicker {
-                color: #64748b !important;
+                color: #334155 !important;
                 font-size: 11px;
                 font-weight: 700;
                 text-align: right;
                 text-transform: uppercase;
             }
             .bi-step-title {
-                color: #1e293b !important;
+                color: #0f172a !important;
                 font-size: 15px;
                 font-weight: 800;
                 margin-bottom: 5px;
             }
             .bi-step-detail {
-                color: #64748b !important;
+                color: #334155 !important;
                 font-size: 12px;
                 min-height: 32px;
                 line-height: 1.3;
             }
             .bi-step-foot {
                 border-top: 1px solid #f1f5f9;
-                color: #94a3b8 !important;
+                color: #475569 !important;
                 font-size: 11px;
                 margin-top: 13px;
                 padding-top: 8px;
@@ -801,27 +801,160 @@ elif pagina == "③ Proceso ETL":
 elif pagina == "④ Data Warehouse":
     st.subheader("Data Warehouse en Supabase")
     
-    # Inicialización local/remota de tablas Supabase (trasladada del sidebar)
-    if st.button("Crear / Actualizar estructura de tablas en Supabase"):
-        try:
-            ejecutar_sql_schema(engine)
-            st.success("Tablas y vistas verificadas en Supabase.")
-        except Exception as exc:
-            st.error(f"Error al inicializar las tablas: {exc}")
-            
+    # 1. Verificar Estado del Data Warehouse en Tiempo Real
+    count_db = 0
+    db_connected = False
+    try:
+        with engine.connect() as conn:
+            res = conn.execute(text("SELECT COUNT(*) FROM fact_precios")).fetchone()
+            count_db = res[0] if res else 0
+            db_connected = True
+    except Exception:
+        db_connected = False
+        
+    # Calcular estado
+    if db_connected and count_db > 0:
+        status_color = "#10b981" # Verde
+        status_text = "CARGADO Y ACTIVO (Supabase Cloud)"
+        status_desc = f"El Data Mart se encuentra inicializado y activo en Supabase con {count_db} registros de hechos cargados."
+    elif not st.session_state.hechos_df.empty:
+        status_color = "#f59e0b" # Naranja
+        status_text = "PENDIENTE DE CARGA (ETL local listo)"
+        status_desc = "Los hechos y dimensiones han sido calculados localmente (Paso 3). Usa el botón 'Guardar Data Warehouse' abajo para subirlos a Supabase."
+    else:
+        status_color = "#ef4444" # Rojo
+        status_text = "ESPERANDO INGESTA DE DATOS (Paso 1)"
+        status_desc = "La tabla de hechos local está vacía. Por favor, sube un archivo SISAP en 'Fuentes de Datos' y ejecuta el ETL."
+        
+    st.markdown(
+        f"""
+        <div style="background-color: #1e293b; padding: 18px 24px; border-radius: 10px; border-left: 5px solid {status_color}; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(15,23,42,0.1);">
+            <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Estado del Data Mart</div>
+            <div style="font-size: 18px; font-weight: 800; color: #ffffff; margin-top: 5px; letter-spacing: .02em;">{status_text}</div>
+            <div style="font-size: 13px; color: #cbd5e1; margin-top: 6px; line-height: 1.4;">{status_desc}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # 2. Snowflake Diagram (Modelo Copo de Nieve)
+    st.markdown(
+        """
+        <div style="background-color: #1e293b; padding: 22px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 18px; display: flex; align-items: center; gap: 6px;">❄️ Modelo Lógico: Copo de Nieve (Snowflake Schema)</div>
+            <div style="display: grid; grid-template-columns: 1.2fr 1.5fr 1.2fr; gap: 20px; align-items: center;">
+                
+                <!-- Columna Izquierda: Dim Producto Normalizada (Snowflake) -->
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <span style="color: #a855f7; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_producto</span>
+                        <hr style="margin: 6px 0; border-color: #1e293b;">
+                        <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
+                            🔑 <span style="color: #cbd5e1;">producto_id</span> (PK)<br>
+                            # <span style="color: #cbd5e1;">producto</span> (Nombre)<br>
+                            🔗 <span style="color: #cbd5e1;">grupo_id</span> (FK a Grupo)
+                        </div>
+                    </div>
+                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <span style="color: #a855f7; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_grupo_producto</span>
+                        <hr style="margin: 6px 0; border-color: #1e293b;">
+                        <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
+                            🔑 <span style="color: #cbd5e1;">grupo_id</span> (PK)<br>
+                            # <span style="color: #cbd5e1;">grupo_nombre</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Columna Central: Tabla de Hechos (Fact Precios) -->
+                <div style="background: #1e3a8a; border: 2px solid #3b82f6; border-radius: 10px; padding: 18px; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25);">
+                    <span style="color: #38bdf8; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: .02em;">fact_precios</span>
+                    <div style="font-size: 9px; color: #93c5fd; text-transform: uppercase; font-weight: 600; margin-top: 2px;">Tabla de Hechos (Métricas)</div>
+                    <hr style="margin: 8px 0; border-color: #2563eb;">
+                    <div style="font-size: 11px; color: #dbeafe; line-height: 1.5;">
+                        🔗 <span style="color: #ffffff; font-weight: 600;">producto_id</span> (FK)<br>
+                        🔗 <span style="color: #ffffff; font-weight: 600;">mercado_id</span> (FK)<br>
+                        🔗 <span style="color: #ffffff; font-weight: 600;">fecha_id</span> (FK)<br>
+                        🔗 <span style="color: #ffffff; font-weight: 600;">tipo_venta_id</span> (FK)<br>
+                        💰 <span style="color: #cbd5e1;">precio_promedio</span><br>
+                        💰 <span style="color: #cbd5e1;">precio_minimo</span><br>
+                        💰 <span style="color: #cbd5e1;">precio_maximo</span><br>
+                        💰 <span style="color: #cbd5e1;">variacion_precio</span>
+                    </div>
+                </div>
+                
+                <!-- Columna Derecha: Mercado Normalizado (Snowflake) y Fecha -->
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <span style="color: #10b981; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_mercado</span>
+                        <hr style="margin: 6px 0; border-color: #1e293b;">
+                        <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
+                            🔑 <span style="color: #cbd5e1;">mercado_id</span> (PK)<br>
+                            # <span style="color: #cbd5e1;">mercado</span> (Nombre)<br>
+                            🔗 <span style="color: #cbd5e1;">tipo_mercado_id</span> (FK)
+                        </div>
+                    </div>
+                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <span style="color: #10b981; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_tipo_mercado</span>
+                        <hr style="margin: 6px 0; border-color: #1e293b;">
+                        <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
+                            🔑 <span style="color: #cbd5e1;">tipo_mercado_id</span> (PK)<br>
+                            # <span style="color: #cbd5e1;">tipo</span> (Mayorista/Minorista)
+                        </div>
+                    </div>
+                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <span style="color: #f59e0b; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_fecha</span>
+                        <hr style="margin: 6px 0; border-color: #1e293b;">
+                        <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
+                            🔑 <span style="color: #cbd5e1;">fecha_id</span> (PK)<br>
+                            # <span style="color: #cbd5e1;">fecha</span> (Date)<br>
+                            # <span style="color: #cbd5e1;">mes</span> (1-12)<br>
+                            # <span style="color: #cbd5e1;">anio</span>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    st.markdown("### Acciones de Carga y Mantenimiento")
+    
     ok_df = st.session_state.ok_df
     hechos = st.session_state.hechos_df
     if ok_df.empty or hechos.empty:
         st.info("Primero ejecuta Fuentes, Staging y Proceso ETL.")
-    else:
-        reemplazar = st.checkbox("Reemplazar hechos anteriores en Supabase", value=True)
-        if st.button("Guardar Data Warehouse en Supabase"):
+        
+        # Permitir inicializar tablas incluso sin datos de carga listos
+        if st.button("Crear / Actualizar estructura de tablas en Supabase", use_container_width=True):
             try:
                 ejecutar_sql_schema(engine)
-                insertados = insertar_dimensiones_y_hechos(engine, ok_df, hechos, reemplazar)
-                st.success(f"Data Warehouse cargado en Supabase. Hechos insertados: {insertados}")
+                st.success("Estructura física de tablas verificada con éxito en Supabase.")
+                st.rerun()
             except Exception as exc:
-                st.error(f"Error al guardar en Supabase: {exc}")
+                st.error(f"Error al inicializar las tablas: {exc}")
+    else:
+        reemplazar = st.checkbox("Reemplazar hechos anteriores en Supabase", value=True)
+        
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            if st.button("Guardar Data Warehouse en Supabase", use_container_width=True):
+                try:
+                    ejecutar_sql_schema(engine)
+                    insertados = insertar_dimensiones_y_hechos(engine, ok_df, hechos, reemplazar)
+                    st.success(f"Data Warehouse cargado en Supabase. Hechos insertados: {insertados}")
+                    st.rerun()
+                except Exception as exc:
+                    st.error(f"Error al guardar en Supabase: {exc}")
+        with col_btn2:
+            if st.button("Reconstruir Tablas (Vaciar Supabase)", use_container_width=True):
+                try:
+                    ejecutar_sql_schema(engine)
+                    st.success("Tablas re-creadas con éxito (base de datos vaciada).")
+                    st.rerun()
+                except Exception as exc:
+                    st.error(f"Error al vaciar: {exc}")
 
     df = df_analisis
     if df.empty:

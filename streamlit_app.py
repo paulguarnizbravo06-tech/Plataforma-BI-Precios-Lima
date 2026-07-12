@@ -537,30 +537,30 @@ def insertar_dimensiones_y_hechos(engine, raw_ok: pd.DataFrame, hechos: pd.DataF
 
 def obtener_datos_analisis(engine) -> pd.DataFrame:
     df = pd.DataFrame()
-    # 1. Intentar cargar desde Supabase
-    try:
-        df = pd.read_sql("select * from vw_capa_semantica_bi", engine)
-    except Exception:
-        pass
-    
+    # 1. Priorizar el fallback local de st.session_state si el usuario ha subido un Excel y ejecutado el ETL
+    if "hechos_df" in st.session_state and not st.session_state.hechos_df.empty:
+        df = st.session_state.hechos_df.copy()
+        # Mapear nombres de columnas locales a los de la vista de base de datos
+        col_mapping = {
+            "precio_min": "precio_minimo",
+            "precio_prom": "precio_promedio",
+            "precio_max": "precio_maximo",
+            "tipo_venta": "tipo_venta"
+        }
+        df = df.rename(columns={k: v for k, v in col_mapping.items() if k in df.columns})
+
+    # 2. Si no hay datos subidos localmente, intentar cargar desde Supabase
     if df.empty:
         try:
-            df = pd.read_sql("select * from fact_precios", engine)
+            df = pd.read_sql("select * from vw_capa_semantica_bi", engine)
         except Exception:
             pass
-
-    # 2. Si no hay conexión o datos en Supabase, usar el fallback local de st.session_state
-    if df.empty:
-        if "hechos_df" in st.session_state and not st.session_state.hechos_df.empty:
-            df = st.session_state.hechos_df.copy()
-            # Mapear nombres de columnas locales a los de la vista de base de datos
-            col_mapping = {
-                "precio_min": "precio_minimo",
-                "precio_prom": "precio_promedio",
-                "precio_max": "precio_maximo",
-                "tipo_venta": "tipo_venta"
-            }
-            df = df.rename(columns={k: v for k, v in col_mapping.items() if k in df.columns})
+        
+        if df.empty:
+            try:
+                df = pd.read_sql("select * from fact_precios", engine)
+            except Exception:
+                pass
 
     if df.empty:
         return pd.DataFrame()
@@ -1383,6 +1383,34 @@ elif pagina == "⑦ Visualización BI":
             for c in ["Precio actual (S/)", "Precio predicho (S/)", "Incremento esperado (S/)"]:
                 tabla_resumen[c] = tabla_resumen[c].map(lambda x: f"S/ {x:.2f}")
             st.dataframe(tabla_resumen, use_container_width=True, hide_index=True)
+
+
+# ==============================================================================
+# BOTON GLOBAL PARA IR AL SIGUIENTE PASO (WIZARD FLOW)
+# ==============================================================================
+ORDEN_PAGINAS = [
+    "⊞ Pantalla General",
+    "① Fuentes de Datos",
+    "② Staging Area",
+    "③ Proceso ETL",
+    "④ Data Warehouse",
+    "⑤ Capa de IA",
+    "⑥ Capa Semántica & KPIs",
+    "⑦ Visualización BI"
+]
+
+if "pagina" in st.session_state:
+    current_page = st.session_state.pagina
+    if current_page in ORDEN_PAGINAS:
+        current_idx = ORDEN_PAGINAS.index(current_page)
+        if current_idx < len(ORDEN_PAGINAS) - 1:
+            next_page = ORDEN_PAGINAS[current_idx + 1]
+            st.markdown("<hr style='border-color: #cbd5e1; margin: 40px 0 20px 0;'>", unsafe_allow_html=True)
+            col_l, col_c, col_r = st.columns([1.5, 1.2, 1.5])
+            with col_c:
+                if st.button(f"Siguiente Paso: {next_page} ->", use_container_width=True, type="primary", key="btn_next_step_wizard"):
+                    st.session_state.pagina = next_page
+                    st.rerun()
 
 
 

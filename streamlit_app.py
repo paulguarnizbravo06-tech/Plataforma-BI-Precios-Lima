@@ -924,95 +924,65 @@ elif pagina == "④ Data Warehouse":
         """,
         unsafe_allow_html=True
     )
-    # 2. Snowflake Diagram (Modelo Copo de Nieve)
     st.markdown(
         """<div style="background-color: #1e293b; padding: 22px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-<div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">[Copo de Nieve] Modelo Logico: Snowflake Schema</div>
+<div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">[Copo de Nieve] Modelo Logico Fisico: Snowflake Schema (Data Warehouse)</div>
 
 <!-- Leyenda de Cardinalidad 1 a Muchos -->
 <div style="font-size: 10px; color: #94a3b8; display: flex; gap: 15px; margin-bottom: 22px; border-bottom: 1px solid #334155; padding-bottom: 10px;">
 <span style="font-weight: 600; color: #cbd5e1;">Cardinalidad:</span>
-<span><span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-right: 4px;">1</span> Uno (Lado Principal)</span>
-<span><span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-right: 4px;">N</span> Muchos (Lado Hechos / Relacion)</span>
+<span><span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-right: 4px;">1</span> Uno (Lado Principal / PK)</span>
+<span><span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-right: 4px;">N</span> Muchos (Lado Hechos / FK)</span>
 </div>
 
 <div style="display: grid; grid-template-columns: 1.2fr 80px 1.5fr 80px 1.2fr; gap: 0px; align-items: center;">
 
-<!-- Columna 1: Left Dimensions (Producto & Grupo) -->
+<!-- Columna 1: Lado Izquierdo (Dimension Producto) -->
 <div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
-
-<!-- Table dim_producto -->
 <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-<span style="color: #a855f7; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_producto</span>
+<span style="color: #38bdf8; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_producto</span>
 <hr style="margin: 6px 0; border-color: #1e293b;">
 <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-PK <span style="color: #cbd5e1;">producto_id</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
-# <span style="color: #cbd5e1;">producto</span> (Nombre)<br>
-FK <span style="color: #cbd5e1;">grupo_id</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span>
+PK <span style="color: #cbd5e1;">id_producto</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
+# <span style="color: #cbd5e1;">producto</span> (Nombre)
 </div>
-</div>
-
-<!-- Vertical Connector from Grupo to Producto -->
-<div style="display: flex; justify-content: center; align-items: center; padding: 8px 0;">
-<svg width="40" height="40" style="overflow: visible;">
-<path d="M 20,40 L 20,0" stroke="#3b82f6" stroke-width="2" fill="none" stroke-dasharray="3,3"/>
-<polygon points="17,5 20,0 23,5" fill="#3b82f6"/>
-<text x="5" y="32" fill="#10b981" font-size="10" font-weight="bold">1</text>
-<text x="5" y="15" fill="#a855f7" font-size="10" font-weight="bold">N</text>
-</svg>
-</div>
-
-<!-- Table dim_grupo_producto -->
-<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-<span style="color: #a855f7; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_grupo_producto</span>
-<hr style="margin: 6px 0; border-color: #1e293b;">
-<div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-PK <span style="color: #cbd5e1;">grupo_id</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
-# <span style="color: #cbd5e1;">grupo_nombre</span>
 </div>
 </div>
 
-</div>
-
-<!-- Columna 2: Left Connectors (Horizontal to Fact Table) -->
-<div style="display: flex; flex-direction: column; justify-content: space-around; height: 100%; min-height: 250px;">
-<!-- Line connecting dim_producto to fact_precios -->
-<div style="height: 120px; display: flex; align-items: center; justify-content: center;">
+<!-- Columna 2: Conectores Izquierdos (Horizontal a la Tabla de Hechos) -->
+<div style="display: flex; align-items: center; justify-content: center; height: 100%;">
 <svg width="80" height="40" style="overflow: visible;">
-<path d="M 0,20 L 80,20" stroke="#3b82f6" stroke-width="2" fill="none"/>
-<polygon points="75,16 80,20 75,24" fill="#3b82f6"/>
-<circle cx="3" cy="20" r="3" fill="#3b82f6"/>
+<path d="M 0,20 L 80,20" stroke="#38bdf8" stroke-width="2" fill="none"/>
+<polygon points="75,16 80,20 75,24" fill="#38bdf8"/>
+<circle cx="3" cy="20" r="3" fill="#38bdf8"/>
 <text x="8" y="14" fill="#10b981" font-size="10" font-weight="bold">1</text>
 <text x="60" y="14" fill="#a855f7" font-size="10" font-weight="bold">N</text>
 </svg>
 </div>
-<!-- Space for lower half -->
-<div style="height: 120px;"></div>
-</div>
 
-<!-- Columna 3: Center (Fact Table) -->
+<!-- Columna 3: Centro (Tabla de Hechos - fact_precios) -->
 <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
 <div style="background: #1e3a8a; border: 2px solid #3b82f6; border-radius: 10px; padding: 18px; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25); width: 100%;">
 <span style="color: #38bdf8; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: .02em;">fact_precios</span>
-<div style="font-size: 9px; color: #93c5fd; text-transform: uppercase; font-weight: 600; margin-top: 2px;">Tabla de Hechos (Metricas)</div>
+<div style="font-size: 9px; color: #93c5fd; text-transform: uppercase; font-weight: 600; margin-top: 2px;">Tabla de Hechos (Métricas)</div>
 <hr style="margin: 8px 0; border-color: #2563eb;">
 <div style="font-size: 11px; color: #dbeafe; line-height: 1.5;">
-FK <span style="color: #ffffff; font-weight: 600;">producto_id</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
-FK <span style="color: #ffffff; font-weight: 600;">mercado_id</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
-FK <span style="color: #ffffff; font-weight: 600;">fecha_id</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
-FK <span style="color: #ffffff; font-weight: 600;">tipo_venta_id</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
-S/. <span style="color: #cbd5e1;">precio_promedio</span><br>
-S/. <span style="color: #cbd5e1;">precio_minimo</span><br>
-S/. <span style="color: #cbd5e1;">precio_maximo</span><br>
-S/. <span style="color: #cbd5e1;">variacion_precio</span>
+PK <span style="color: #ffffff; font-weight: 600;">id_precio</span><br>
+FK <span style="color: #ffffff; font-weight: 600;">id_producto</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
+FK <span style="color: #ffffff; font-weight: 600;">id_tiempo</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
+FK <span style="color: #ffffff; font-weight: 600;">id_unidad</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
+FK <span style="color: #ffffff; font-weight: 600;">id_tipo_venta</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
+# <span style="color: #cbd5e1;">precio_min</span><br>
+# <span style="color: #cbd5e1;">precio_prom</span><br>
+# <span style="color: #cbd5e1;">precio_max</span>
 </div>
 </div>
 </div>
 
-<!-- Columna 4: Right Connectors (Horizontal to Fact Table) -->
-<div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; min-height: 320px; padding: 10px 0;">
-<!-- Line connecting dim_mercado to fact_precios (Top) -->
-<div style="height: 100px; display: flex; align-items: center; justify-content: center;">
+<!-- Columna 4: Conectores Derechos (Horizontales a la Tabla de Hechos) -->
+<div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; min-height: 480px; padding: 10px 0;">
+<!-- Conector dim_tiempo a fact_precios -->
+<div style="height: 120px; display: flex; align-items: center; justify-content: center;">
 <svg width="80" height="40" style="overflow: visible;">
 <path d="M 80,20 L 0,20" stroke="#10b981" stroke-width="2" fill="none"/>
 <polygon points="5,16 0,20 5,24" fill="#10b981"/>
@@ -1022,11 +992,8 @@ S/. <span style="color: #cbd5e1;">variacion_precio</span>
 </svg>
 </div>
 
-<!-- Empty space where dim_tipo_mercado vertical connection resides -->
-<div style="height: 80px;"></div>
-
-<!-- Line connecting dim_fecha to fact_precios (Bottom) -->
-<div style="height: 100px; display: flex; align-items: center; justify-content: center;">
+<!-- Conector dim_unidad a fact_precios -->
+<div style="height: 180px; display: flex; align-items: center; justify-content: center;">
 <svg width="80" height="40" style="overflow: visible;">
 <path d="M 80,20 L 0,20" stroke="#f59e0b" stroke-width="2" fill="none"/>
 <polygon points="5,16 0,20 5,24" fill="#f59e0b"/>
@@ -1035,54 +1002,102 @@ S/. <span style="color: #cbd5e1;">variacion_precio</span>
 <text x="12" y="14" fill="#a855f7" font-size="10" font-weight="bold">N</text>
 </svg>
 </div>
-</div>
 
-<!-- Columna 5: Right Dimensions (Mercado, Tipo & Fecha) -->
-<div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
-
-<!-- Table dim_mercado -->
-<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-<span style="color: #10b981; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_mercado</span>
-<hr style="margin: 6px 0; border-color: #1e293b;">
-<div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-PK <span style="color: #cbd5e1;">mercado_id</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
-# <span style="color: #cbd5e1;">mercado</span> (Nombre)<br>
-FK <span style="color: #cbd5e1;">tipo_mercado_id</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span>
+<!-- Conector dim_tipo_venta a fact_precios -->
+<div style="height: 120px; display: flex; align-items: center; justify-content: center;">
+<svg width="80" height="40" style="overflow: visible;">
+<path d="M 80,20 L 0,20" stroke="#a78bfa" stroke-width="2" fill="none"/>
+<polygon points="5,16 0,20 5,24" fill="#a78bfa"/>
+<circle cx="77" cy="20" r="3" fill="#a78bfa"/>
+<text x="62" y="14" fill="#10b981" font-size="10" font-weight="bold">1</text>
+<text x="12" y="14" fill="#a855f7" font-size="10" font-weight="bold">N</text>
+</svg>
 </div>
 </div>
 
-<!-- Vertical Connector from Tipo Mercado to Mercado -->
-<div style="display: flex; justify-content: center; align-items: center; padding: 6px 0;">
-<svg width="40" height="30" style="overflow: visible;">
-<path d="M 20,30 L 20,0" stroke="#10b981" stroke-width="2" fill="none" stroke-dasharray="3,3"/>
-<polygon points="17,5 20,0 23,5" fill="#10b981"/>
-<text x="5" y="24" fill="#10b981" font-size="10" font-weight="bold">1</text>
-<text x="5" y="12" fill="#a855f7" font-size="10" font-weight="bold">N</text>
+<!-- Columna 5: Lado Derecho (Dimensiones Normalizadas en Copo de Nieve) -->
+<div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; gap: 10px;">
+
+<!-- Rama Tiempo (Copo de Nieve) -->
+<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+<span style="color: #10b981; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_tiempo</span>
+<hr style="margin: 4px 0; border-color: #1e293b;">
+<div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
+PK <span style="color: #cbd5e1;">id_tiempo</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
+# <span style="color: #cbd5e1;">fecha</span> (Date)<br>
+# <span style="color: #cbd5e1;">dia</span> (1-31)<br>
+FK <span style="color: #cbd5e1;">id_mes</span> <span style="background: #a855f7; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">N</span>
+</div>
+</div>
+
+<div style="display: flex; justify-content: center; align-items: center; height: 20px;">
+<svg width="40" height="20" style="overflow: visible;">
+<path d="M 20,20 L 20,0" stroke="#10b981" stroke-width="1.5" fill="none" stroke-dasharray="2,2"/>
+<polygon points="18,3 20,0 22,3" fill="#10b981"/>
+<text x="5" y="16" fill="#10b981" font-size="8" font-weight="bold">1</text>
+<text x="5" y="8" fill="#a855f7" font-size="8" font-weight="bold">N</text>
 </svg>
 </div>
 
-<!-- Table dim_tipo_mercado -->
-<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-<span style="color: #10b981; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_tipo_mercado</span>
-<hr style="margin: 6px 0; border-color: #1e293b;">
-<div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-PK <span style="color: #cbd5e1;">tipo_mercado_id</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
-# <span style="color: #cbd5e1;">tipo</span> (Mayorista/Minorista)
-</div>
-</div>
-
-<!-- Spacing element -->
-<div style="height: 18px;"></div>
-
-<!-- Table dim_fecha -->
-<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-<span style="color: #f59e0b; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_fecha</span>
-<hr style="margin: 6px 0; border-color: #1e293b;">
-<div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-PK <span style="color: #cbd5e1;">fecha_id</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
-# <span style="color: #cbd5e1;">fecha</span> (Date)<br>
+<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+<span style="color: #10b981; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_mes</span>
+<hr style="margin: 4px 0; border-color: #1e293b;">
+<div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
+PK <span style="color: #cbd5e1;">id_mes</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
 # <span style="color: #cbd5e1;">mes</span> (1-12)<br>
-# <span style="color: #cbd5e1;">anio</span>
+# <span style="color: #cbd5e1;">nombre_mes</span><br>
+FK <span style="color: #cbd5e1;">id_anio</span> <span style="background: #a855f7; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">N</span>
+</div>
+</div>
+
+<div style="display: flex; justify-content: center; align-items: center; height: 20px;">
+<svg width="40" height="20" style="overflow: visible;">
+<path d="M 20,20 L 20,0" stroke="#10b981" stroke-width="1.5" fill="none" stroke-dasharray="2,2"/>
+<polygon points="18,3 20,0 22,3" fill="#10b981"/>
+<text x="5" y="16" fill="#10b981" font-size="8" font-weight="bold">1</text>
+<text x="5" y="8" fill="#a855f7" font-size="8" font-weight="bold">N</text>
+</svg>
+</div>
+
+<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+<span style="color: #10b981; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_anio</span>
+<hr style="margin: 4px 0; border-color: #1e293b;">
+<div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
+PK <span style="color: #cbd5e1;">id_anio</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
+# <span style="color: #cbd5e1;">anio</span> (2020-2026)
+</div>
+</div>
+
+<!-- Separador visual de ramas -->
+<div style="height: 15px; border-bottom: 1px dashed #334155; margin: 5px 0;"></div>
+
+<!-- Rama Unidad (Copo de Nieve) -->
+<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+<span style="color: #f59e0b; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_unidad</span>
+<hr style="margin: 4px 0; border-color: #1e293b;">
+<div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
+PK <span style="color: #cbd5e1;">id_unidad</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
+# <span style="color: #cbd5e1;">unidad</span> (Kg, Atado, etc)<br>
+# <span style="color: #cbd5e1;">equivalencia</span><br>
+FK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #a855f7; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">N</span>
+</div>
+</div>
+
+<div style="display: flex; justify-content: center; align-items: center; height: 20px;">
+<svg width="40" height="20" style="overflow: visible;">
+<path d="M 20,20 L 20,0" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-dasharray="2,2"/>
+<polygon points="18,3 20,0 22,3" fill="#f59e0b"/>
+<text x="5" y="16" fill="#10b981" font-size="8" font-weight="bold">1</text>
+<text x="5" y="8" fill="#a855f7" font-size="8" font-weight="bold">N</text>
+</svg>
+</div>
+
+<div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+<span style="color: #a78bfa; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .01em;">dim_tipo_venta</span>
+<hr style="margin: 4px 0; border-color: #1e293b;">
+<div style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
+PK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; font-weight: 800; margin-left: 2px;">1</span><br>
+# <span style="color: #cbd5e1;">tipo_venta</span> (Mayorista/Minorista)
 </div>
 </div>
 

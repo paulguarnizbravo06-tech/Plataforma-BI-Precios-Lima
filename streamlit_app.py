@@ -335,6 +335,29 @@ def aplicar_estilos() -> None:
             .stAlert [data-testid="stMarkdownContainer"] p {
                 color: #0f172a !important;
             }
+            
+            /* Premium Filter Card Container */
+            div[data-testid="stBorderedContainer"] {
+                background-color: #f8fafc !important; /* Soft slate gray background */
+                border: 1px solid #cbd5e1 !important; /* Muted gray border */
+                border-radius: 12px !important;
+                box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02) !important;
+                padding: 20px 16px !important;
+            }
+            
+            /* Custom styling for checklist items */
+            div[data-testid="stCheckbox"] label {
+                font-weight: 500 !important;
+                color: #334155 !important;
+                font-size: 13px !important;
+            }
+            
+            /* Smaller search bar padding inside filter card */
+            div[data-testid="stTextInput"] input {
+                padding: 6px 12px !important;
+                font-size: 12px !important;
+                border-radius: 6px !important;
+            }
         </style>
         """,
         unsafe_allow_html=True,
@@ -763,66 +786,80 @@ pagina = st.session_state.pagina
 # CONFIGURACIÓN DE CONTENEDOR PRINCIPAL Y ZONA DE FILTROS AL LADO DEL DASHBOARD
 # --------------------------------------------------------------------------
 if not df_analisis.empty and pagina in ["⑤ Capa de IA", "⑥ Capa Semántica & KPIs", "⑦ Visualización BI"]:
-    col_filtros, col_principal = st.columns([1.2, 4.0])
+    col_filtros, col_principal = st.columns([1.3, 4.0]) # Slightly wider filter column for better visual space
     
     with col_filtros:
-        st.markdown(
-            """
-            <div style="background-color: #ffffff; padding: 18px; border-radius: 10px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px;">
-                <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #3b82f6; padding-bottom: 6px;">Zona de Filtros</h3>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-        # 1. Rango de Fechas
-        min_date = df_analisis["fecha"].min().date()
-        max_date = df_analisis["fecha"].max().date()
-        
-        date_val = st.date_input(
-            "Rango de Fechas",
-            value=(min_date, max_date),
-            min_value=min_date,
-            max_value=max_date,
-            key="date_range_picker"
-        )
-        
-        if isinstance(date_val, (list, tuple)) and len(date_val) == 2:
-            start_date, end_date = date_val
-        else:
-            start_date = end_date = date_val[0] if isinstance(date_val, (list, tuple)) and len(date_val) > 0 else min_date
+        with st.container(border=True):
+            st.markdown(
+                """
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px; border-bottom: 2px solid #2563eb; padding-bottom: 8px;">
+                    <span style="font-size: 18px; filter: grayscale(10%);">⚙️</span>
+                    <span style="font-weight: 800; font-size: 14px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.03em;">Filtros de Análisis</span>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
             
-        # 2. Selección de Producto
-        productos_disponibles = sorted(df_analisis["producto"].dropna().unique().tolist())
-        select_all_prod = st.checkbox("Seleccionar todo", value=True, key="sel_all_prod")
-        
-        productos_seleccionados = []
-        if select_all_prod:
-            productos_seleccionados = productos_disponibles
-        else:
-            with st.container(height=200):
-                for prod in productos_disponibles:
-                    if st.checkbox(prod, value=False, key=f"chk_prod_{prod}"):
-                        productos_seleccionados.append(prod)
-            if not productos_seleccionados:
+            # 1. Rango de Fechas
+            st.markdown('<div style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">📅 Periodo de Tiempo</div>', unsafe_allow_html=True)
+            min_date = df_analisis["fecha"].min().date()
+            max_date = df_analisis["fecha"].max().date()
+            
+            date_val = st.date_input(
+                "Selecciona el periodo:",
+                value=(min_date, max_date),
+                min_value=min_date,
+                max_value=max_date,
+                key="date_range_picker",
+                label_visibility="collapsed"
+            )
+            
+            if isinstance(date_val, (list, tuple)) and len(date_val) == 2:
+                start_date, end_date = date_val
+            else:
+                start_date = end_date = date_val[0] if isinstance(date_val, (list, tuple)) and len(date_val) > 0 else min_date
+                
+            # 2. Selección de Producto
+            st.markdown('<div style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 18px; margin-bottom: 6px;">🍎 Productos</div>', unsafe_allow_html=True)
+            productos_disponibles = sorted(df_analisis["producto"].dropna().unique().tolist())
+            select_all_prod = st.checkbox("Seleccionar todos los productos", value=True, key="sel_all_prod")
+            
+            productos_seleccionados = []
+            if select_all_prod:
                 productos_seleccionados = productos_disponibles
-        
-        # 3. Tipo de Mercado
-        st.markdown("**Tipo de Mercado**")
-        tipos_venta_disponibles = sorted(df_analisis["tipo_venta"].dropna().unique().tolist())
-        tipo_venta_selected = []
-        for tv in tipos_venta_disponibles:
-            if st.checkbox(tv, value=True, key=f"chk_tv_{tv}"):
-                tipo_venta_selected.append(tv)
-        if not tipo_venta_selected:
-            tipo_venta_selected = tipos_venta_disponibles
+            else:
+                # Buscador interactivo premium para filtrar la lista
+                search_query = st.text_input("Filtrar productos:", "", key="prod_search_query", placeholder="🔍 Filtrar lista...", label_visibility="collapsed")
+                productos_filtrados = [p for p in productos_disponibles if search_query.lower() in p.lower()] if search_query else productos_disponibles
+                
+                with st.container(height=160):
+                    for prod in productos_filtrados:
+                        if st.checkbox(prod, value=False, key=f"chk_prod_{prod}"):
+                            productos_seleccionados.append(prod)
+                if not productos_seleccionados:
+                    productos_seleccionados = productos_disponibles
             
-        # Aplicar filtrado
-        df_filtrado = df_analisis[
-            (df_analisis["fecha"].dt.date >= start_date) &
-            (df_analisis["fecha"].dt.date <= end_date) &
-            (df_analisis["producto"].isin(productos_seleccionados)) &
-            (df_analisis["tipo_venta"].isin(tipo_venta_selected))
-        ]
+            # 3. Tipo de Mercado
+            st.markdown('<div style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 18px; margin-bottom: 6px;">🏪 Canal / Mercado</div>', unsafe_allow_html=True)
+            tipos_venta_disponibles = sorted(df_analisis["tipo_venta"].dropna().unique().tolist())
+            tipo_venta_selected = []
+            
+            col_tv1, col_tv2 = st.columns(2)
+            for idx, tv in enumerate(tipos_venta_disponibles):
+                target_col = col_tv1 if idx % 2 == 0 else col_tv2
+                with target_col:
+                    if st.checkbox(tv, value=True, key=f"chk_tv_{tv}"):
+                        tipo_venta_selected.append(tv)
+            if not tipo_venta_selected:
+                tipo_venta_selected = tipos_venta_disponibles
+                
+            # Aplicar filtrado
+            df_filtrado = df_analisis[
+                (df_analisis["fecha"].dt.date >= start_date) &
+                (df_analisis["fecha"].dt.date <= end_date) &
+                (df_analisis["producto"].isin(productos_seleccionados)) &
+                (df_analisis["tipo_venta"].isin(tipo_venta_selected))
+            ]
     contenedor_principal = col_principal
 else:
     df_filtrado = df_analisis

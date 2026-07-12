@@ -856,7 +856,15 @@ elif pagina == "④ Data Warehouse":
     # 2. Snowflake Diagram (Modelo Copo de Nieve)
     st.markdown(
         """<div style="background-color: #1e293b; padding: 22px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-<div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 18px; display: flex; align-items: center; gap: 6px;">[Copo de Nieve] Modelo Logico: Copo de Nieve (Snowflake Schema)</div>
+<div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">[Copo de Nieve] Modelo Logico: Snowflake Schema</div>
+
+<!-- Leyenda de Cardinalidad 1 a Muchos -->
+<div style="font-size: 10px; color: #94a3b8; display: flex; gap: 15px; margin-bottom: 18px; border-bottom: 1px solid #334155; padding-bottom: 10px;">
+<span style="font-weight: 600; color: #cbd5e1;">Cardinalidad:</span>
+<span><span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-right: 4px;">1</span> Uno (Lado Principal)</span>
+<span><span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-right: 4px;">N</span> Muchos (Lado Hechos / Relacion)</span>
+</div>
+
 <div style="display: grid; grid-template-columns: 1.2fr 1.5fr 1.2fr; gap: 20px; align-items: center;">
 
 <!-- Columna Izquierda: Dim Producto Normalizada (Snowflake) -->
@@ -865,16 +873,16 @@ elif pagina == "④ Data Warehouse":
 <span style="color: #a855f7; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_producto</span>
 <hr style="margin: 6px 0; border-color: #1e293b;">
 <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-PK <span style="color: #cbd5e1;">producto_id</span> (PK)<br>
+PK <span style="color: #cbd5e1;">producto_id</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
 # <span style="color: #cbd5e1;">producto</span> (Nombre)<br>
-FK <span style="color: #cbd5e1;">grupo_id</span> (FK a Grupo)
+FK <span style="color: #cbd5e1;">grupo_id</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span>
 </div>
 </div>
 <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
 <span style="color: #a855f7; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_grupo_producto</span>
 <hr style="margin: 6px 0; border-color: #1e293b;">
 <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-PK <span style="color: #cbd5e1;">grupo_id</span> (PK)<br>
+PK <span style="color: #cbd5e1;">grupo_id</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
 # <span style="color: #cbd5e1;">grupo_nombre</span>
 </div>
 </div>
@@ -886,10 +894,10 @@ PK <span style="color: #cbd5e1;">grupo_id</span> (PK)<br>
 <div style="font-size: 9px; color: #93c5fd; text-transform: uppercase; font-weight: 600; margin-top: 2px;">Tabla de Hechos (Metricas)</div>
 <hr style="margin: 8px 0; border-color: #2563eb;">
 <div style="font-size: 11px; color: #dbeafe; line-height: 1.5;">
-FK <span style="color: #ffffff; font-weight: 600;">producto_id</span> (FK)<br>
-FK <span style="color: #ffffff; font-weight: 600;">mercado_id</span> (FK)<br>
-FK <span style="color: #ffffff; font-weight: 600;">fecha_id</span> (FK)<br>
-FK <span style="color: #ffffff; font-weight: 600;">tipo_venta_id</span> (FK)<br>
+FK <span style="color: #ffffff; font-weight: 600;">producto_id</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
+FK <span style="color: #ffffff; font-weight: 600;">mercado_id</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
+FK <span style="color: #ffffff; font-weight: 600;">fecha_id</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
+FK <span style="color: #ffffff; font-weight: 600;">tipo_venta_id</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span><br>
 S/. <span style="color: #cbd5e1;">precio_promedio</span><br>
 S/. <span style="color: #cbd5e1;">precio_minimo</span><br>
 S/. <span style="color: #cbd5e1;">precio_maximo</span><br>
@@ -903,16 +911,16 @@ S/. <span style="color: #cbd5e1;">variacion_precio</span>
 <span style="color: #10b981; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_mercado</span>
 <hr style="margin: 6px 0; border-color: #1e293b;">
 <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-PK <span style="color: #cbd5e1;">mercado_id</span> (PK)<br>
+PK <span style="color: #cbd5e1;">mercado_id</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
 # <span style="color: #cbd5e1;">mercado</span> (Nombre)<br>
-FK <span style="color: #cbd5e1;">tipo_mercado_id</span> (FK)
+FK <span style="color: #cbd5e1;">tipo_mercado_id</span> <span style="background: #a855f7; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">N</span>
 </div>
 </div>
 <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
 <span style="color: #10b981; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_tipo_mercado</span>
 <hr style="margin: 6px 0; border-color: #1e293b;">
 <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-PK <span style="color: #cbd5e1;">tipo_mercado_id</span> (PK)<br>
+PK <span style="color: #cbd5e1;">tipo_mercado_id</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
 # <span style="color: #cbd5e1;">tipo</span> (Mayorista/Minorista)
 </div>
 </div>
@@ -920,7 +928,7 @@ PK <span style="color: #cbd5e1;">tipo_mercado_id</span> (PK)<br>
 <span style="color: #f59e0b; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .02em;">dim_fecha</span>
 <hr style="margin: 6px 0; border-color: #1e293b;">
 <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-PK <span style="color: #cbd5e1;">fecha_id</span> (PK)<br>
+PK <span style="color: #cbd5e1;">fecha_id</span> <span style="background: #10b981; color: white; padding: 1px 5px; border-radius: 10px; font-size: 9px; font-weight: 800; margin-left: 4px;">1</span><br>
 # <span style="color: #cbd5e1;">fecha</span> (Date)<br>
 # <span style="color: #cbd5e1;">mes</span> (1-12)<br>
 # <span style="color: #cbd5e1;">anio</span>

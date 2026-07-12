@@ -56,13 +56,27 @@ def aplicar_estilos() -> None:
             [data-testid="stSidebar"] * {
                 color: #f1f5f9 !important;
             }
-            /* Hide the radio input circle completely */
+            /* Hide the radio input circle completely and aggressively */
             [data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"] {
                 display: none !important;
             }
+            [data-testid="stSidebar"] div[role="radiogroup"] [data-testid="stRadioCircle"] {
+                display: none !important;
+            }
+            [data-testid="stSidebar"] div[role="radiogroup"] label > div:first-of-type {
+                display: none !important;
+            }
+            [data-testid="stSidebar"] div[role="radiogroup"] label > div:not([data-testid="stMarkdownContainer"]) {
+                display: none !important;
+            }
+            [data-testid="stSidebar"] div[role="radiogroup"] div[data-checked] div:first-of-type {
+                display: none !important;
+            }
+            
             /* Style the wrapper label to look like a button menu item */
             [data-testid="stSidebar"] div[role="radiogroup"] label {
-                display: block !important;
+                display: flex !important;
+                align-items: center !important;
                 background-color: transparent !important;
                 color: #cbd5e1 !important;
                 padding: 10px 16px !important;
@@ -635,8 +649,6 @@ df_filtrado = pd.DataFrame()
 with st.sidebar:
     if os.path.exists("front-end/img/logo.png"):
         st.image("front-end/img/logo.png", use_container_width=True)
-    st.markdown("### Flujo BI")
-    st.caption("7 pasos del flujo BI")
     pagina = st.radio(
         "Modulo",
         [

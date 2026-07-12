@@ -1282,6 +1282,108 @@ elif pagina == "⑦ Visualización BI":
             
             st.dataframe(ranking_df, use_container_width=True, hide_index=True)
 
+        # Fila 4: Predicciones de IA Integradas en Visualizacion BI
+        st.markdown("<hr style='border-color: #cbd5e1; margin: 40px 0 25px 0;'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='font-weight: 800; color: #1e293b;'>Predicciones a Futuro de la Capa de IA (8 Semanas)</h3>", unsafe_allow_html=True)
+        
+        # Preparamos las predicciones
+        df_filtrado["fecha"] = pd.to_datetime(df_filtrado["fecha"])
+        
+        # 1. Serie Precio Promedio General
+        serie_precio = df_filtrado.groupby("fecha")["precio_promedio"].mean().sort_index()
+        fechas_futuras = pd.date_range(start=serie_precio.index.max() + pd.Timedelta(days=7), periods=8, freq="7D")
+        
+        precio_futuro = [proyectar(serie_precio, i) for i in range(1, 9)]
+        df_precio_hist = pd.DataFrame({"Fecha": serie_precio.index, "Valor": serie_precio.values, "Tipo": "Historico"})
+        df_precio_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": precio_futuro, "Tipo": "Proyectado"})
+        df_precio_plot = pd.concat([df_precio_hist, df_precio_pred], ignore_index=True)
+        fig_precio = px.line(df_precio_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Precio Promedio (S/)"})
+        fig_precio = embellecer_grafico(fig_precio, "Prediccion 1: Precio Promedio Futuro", "line")
+        
+        # 2. Serie Tendencia de Variacion
+        serie_var = df_filtrado.groupby("fecha")["variacion_precio"].mean().sort_index()
+        var_futuro = [proyectar(serie_var, i) for i in range(1, 9)]
+        df_var_hist = pd.DataFrame({"Fecha": serie_var.index, "Valor": serie_var.values, "Tipo": "Historico"})
+        df_var_pred = pd.DataFrame({"Fecha": fechas_futuras, "Valor": var_futuro, "Tipo": "Proyectado"})
+        df_var_plot = pd.concat([df_var_hist, df_var_pred], ignore_index=True)
+        fig_var = px.line(df_var_plot, x="Fecha", y="Valor", color="Tipo", line_dash="Tipo", labels={"Valor": "Variacion Promedio (S/)"})
+        fig_var = embellecer_grafico(fig_var, "Prediccion 2: Tendencia de Variacion de Precios", "line")
+        
+        # 3. Producto con Mayor Incremento Esperado
+        incrementos = []
+        for prod, grupo in df_filtrado.groupby("producto"):
+            serie_p = grupo.groupby("fecha")["precio_promedio"].mean().sort_index()
+            if len(serie_p) >= 1:
+                actual = float(serie_p.iloc[-1])
+                futuro = proyectar(serie_p, 8)
+                inc = futuro - actual
+                incrementos.append({
+                    "Producto": prod,
+                    "Precio actual (S/)": actual,
+                    "Precio predicho (S/)": futuro,
+                    "Incremento esperado (S/)": inc,
+                    "serie": serie_p
+                })
+        
+        df_incrementos = pd.DataFrame(incrementos)
+        if not df_incrementos.empty:
+            df_incrementos = df_incrementos.sort_values("Incremento esperado (S/)", ascending=False)
+            top_inc = df_incrementos.iloc[0]
+            prod_name = top_inc["Producto"]
+            inc_val = top_inc["Incremento esperado (S/)"]
+            serie_p_top = top_inc["serie"]
+            
+            fechas_futuras_p = pd.date_range(start=serie_p_top.index.max() + pd.Timedelta(days=7), periods=8, freq="7D")
+            p_futuro = [proyectar(serie_p_top, i) for i in range(1, 9)]
+            df_p_hist = pd.DataFrame({"Fecha": serie_p_top.index, "Precio": serie_p_top.values, "Tipo": "Historico"})
+            df_p_pred = pd.DataFrame({"Fecha": fechas_futuras_p, "Precio": p_futuro, "Tipo": "Proyectado"})
+            df_p_plot = pd.concat([df_p_hist, df_p_pred], ignore_index=True)
+            
+            fig_prod = px.line(df_p_plot, x="Fecha", y="Precio", color="Tipo", line_dash="Tipo", labels={"Precio": "Precio (S/)"})
+            fig_prod = embellecer_grafico(fig_prod, f"Prediccion 3: {prod_name} (Mayor Incremento Esperado)", "line")
+            
+            st.info(f"[IA] El producto con mayor incremento esperado en las proximas 8 semanas es {prod_name} con un alza proyectada de S/ {inc_val:.2f}.")
+        else:
+            prod_name = "Sin datos"
+            inc_val = 0.0
+            fig_prod = px.line()
+            fig_prod = embellecer_grafico(fig_prod, "Prediccion 3: Producto con Mayor Incremento Esperado", "line")
+            
+        # 4. Diferencia Mayorista vs Minorista Futura
+        por_canal = df_filtrado.groupby(["fecha", "tipo_venta"])["precio_promedio"].mean().unstack()
+        if "Minorista" in por_canal.columns and "Mayorista" in por_canal.columns:
+            serie_diff = (por_canal["Minorista"] - por_canal["Mayorista"]).dropna().sort_index()
+            diff_futuro = [proyectar(serie_diff, i) for i in range(1, 9)]
+            df_diff_hist = pd.DataFrame({"Fecha": serie_diff.index, "Brecha": serie_diff.values, "Tipo": "Historico"})
+            df_diff_pred = pd.DataFrame({"Fecha": fechas_futuras, "Brecha": diff_futuro, "Tipo": "Proyectado"})
+            df_diff_plot = pd.concat([df_diff_hist, df_diff_pred], ignore_index=True)
+            fig_diff = px.line(df_diff_plot, x="Fecha", y="Brecha", color="Tipo", line_dash="Tipo", labels={"Brecha": "Diferencia (S/)"})
+            fig_diff = embellecer_grafico(fig_diff, "Prediccion 4: Diferencia Mayorista vs Minorista Futura", "line")
+        else:
+            fig_diff = px.line()
+            fig_diff = embellecer_grafico(fig_diff, "Prediccion 4: Diferencia Mayorista vs Minorista Futura (Sin datos de ambos canales)", "line")
+            
+        # Grid para Graficos Predictivos
+        cp1, cp2 = st.columns(2)
+        with cp1:
+            st.plotly_chart(fig_precio, use_container_width=True)
+        with cp2:
+            st.plotly_chart(fig_var, use_container_width=True)
+            
+        cp3, cp4 = st.columns(2)
+        with cp3:
+            st.plotly_chart(fig_prod, use_container_width=True)
+        with cp4:
+            st.plotly_chart(fig_diff, use_container_width=True)
+            
+        # Tabla predictiva
+        if not df_incrementos.empty:
+            st.markdown("### Tabla de Predicciones por Producto")
+            tabla_resumen = df_incrementos.drop(columns=["serie"])
+            for c in ["Precio actual (S/)", "Precio predicho (S/)", "Incremento esperado (S/)"]:
+                tabla_resumen[c] = tabla_resumen[c].map(lambda x: f"S/ {x:.2f}")
+            st.dataframe(tabla_resumen, use_container_width=True, hide_index=True)
+
 
 
 

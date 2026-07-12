@@ -272,6 +272,22 @@ def aplicar_estilos() -> None:
                 padding: 10px;
                 box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
             }
+            
+            /* Streamlit st.metric high contrast typography */
+            [data-testid="stMetricValue"] {
+                color: #0f172a !important;
+            }
+            [data-testid="stMetricLabel"] {
+                color: #334155 !important;
+            }
+            [data-testid="stMetricLabel"] p {
+                color: #334155 !important;
+            }
+            
+            /* Alert boxes high contrast */
+            .stAlert [data-testid="stMarkdownContainer"] p {
+                color: #0f172a !important;
+            }
         </style>
         """,
         unsafe_allow_html=True,

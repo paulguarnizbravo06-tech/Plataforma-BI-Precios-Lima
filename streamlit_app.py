@@ -826,7 +826,7 @@ if not df_analisis.empty and pagina in ["⑤ Capa de IA", "⑥ Capa Semántica &
     contenedor_principal = col_principal
 else:
     df_filtrado = df_analisis
-    contenedor_principal = st
+    contenedor_principal = st.container()
 
 with contenedor_principal:
     if "raw_df" not in st.session_state:

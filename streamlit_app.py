@@ -355,11 +355,30 @@ def get_database_url() -> str | None:
             url = url.replace("postgresql://", "postgresql+pg8000://", 1)
         elif url.startswith("postgres://"):
             url = url.replace("postgres://", "postgresql+pg8000://", 1)
+            
+        # Remover ?sslmode=... de la URL para evitar que pg8000 lance TypeError
+        if "?" in url:
+            base_url, query = url.split("?", 1)
+            params = [p for p in query.split("&") if not p.startswith("sslmode=")]
+            if params:
+                url = base_url + "?" + "&".join(params)
+            else:
+                url = base_url
     return url
 
 
 @st.cache_resource
 def get_engine(database_url: str):
+    import ssl
+    if "pg8000" in database_url:
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        return create_engine(
+            database_url,
+            connect_args={"ssl_context": ssl_context},
+            pool_pre_ping=True
+        )
     return create_engine(database_url, pool_pre_ping=True)
 
 

@@ -280,35 +280,37 @@ def aplicar_estilos() -> None:
                 justify-content: space-between;
                 background-color: #ffffff;
                 border-radius: 10px;
-                padding: 20px;
+                padding: 14px 16px !important;
                 box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
                 border: 1px solid #e2e8f0;
                 margin-bottom: 15px;
                 transition: transform 0.2s;
+                height: 135px !important; /* Force a compact height to prevent vertical stretching */
             }
             .kpi-container:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
             }
             .kpi-title {
-                font-size: 13px;
+                font-size: 11px !important;
                 font-weight: 700;
                 color: #64748b;
                 text-transform: uppercase;
-                margin-bottom: 6px;
+                margin-bottom: 4px;
+                line-height: 1.2;
             }
             .kpi-val {
-                font-size: 32px;
+                font-size: 26px !important;
                 font-weight: 800;
                 color: #0f172a;
-                margin: 0;
+                margin: 5px 0 !important;
             }
             .kpi-meta {
-                font-size: 11px;
+                font-size: 10px !important;
                 color: #94a3b8;
-                margin-top: 8px;
                 border-top: 1px solid #f1f5f9;
-                padding-top: 6px;
+                padding-top: 4px;
+                margin-top: auto;
             }
             
             /* Dataframes and charts container */

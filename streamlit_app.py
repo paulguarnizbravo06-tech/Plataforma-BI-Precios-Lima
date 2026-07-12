@@ -700,6 +700,13 @@ def obtener_datos_analisis(engine) -> pd.DataFrame:
 
 
 def embellecer_grafico(fig, titulo, tipo="bar"):
+    # Determinar altura responsiva segun tipo de grafico para optimizar la visualizacion
+    h_val = 360
+    if tipo == "bar":
+        h_val = 400
+    elif tipo == "pie":
+        h_val = 340
+        
     fig.update_layout(
         title={
             'text': f"<b>{titulo}</b>",
@@ -707,12 +714,14 @@ def embellecer_grafico(fig, titulo, tipo="bar"):
             'x':0.5,
             'xanchor': 'center',
             'yanchor': 'top',
-            'font': {'size': 14, 'color': '#0f172a'}
+            'font': {'size': 13, 'color': '#0f172a'}
         },
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(family="Outfit, sans-serif", size=10, color="#1e293b"),
-        margin=dict(l=20, r=20, t=50, b=20),
+        margin=dict(l=15, r=15, t=55, b=15),
+        height=h_val,
+        autosize=True
     )
     fig.update_xaxes(title_font=dict(color="#1e293b"), tickfont=dict(color="#1e293b"))
     fig.update_yaxes(title_font=dict(color="#1e293b"), tickfont=dict(color="#1e293b"))
@@ -1397,8 +1406,8 @@ FK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #
             fig_top = embellecer_grafico(fig_top, "Top 10 Productos por Precio Promedio", "bar")
             st.plotly_chart(fig_top, use_container_width=True, theme=None)
 
-            # Fila 3: Comparación mayorista vs minorista, evolución del precio promedio, y ranking
-            col_pie, col_line, col_table = st.columns([1, 1.2, 1.8])
+            # Fila 3: Comparación mayorista vs minorista y evolución del precio promedio (Gráficos)
+            col_pie, col_line = st.columns(2)
 
             with col_pie:
                 canales = df_filtrado.groupby("tipo_venta", as_index=False)["precio_promedio"].mean()
@@ -1413,20 +1422,20 @@ FK <span style="color: #cbd5e1;">id_tipo_venta</span> <span style="background: #
                 fig_line = embellecer_grafico(fig_line, "Evolución del Precio Promedio", "line")
                 st.plotly_chart(fig_line, use_container_width=True, theme=None)
 
-            with col_table:
-                st.markdown("<h4 style='text-align: center; margin-bottom: 12px; font-weight: 700;'>Ranking de Productos por Precio Promedio</h4>", unsafe_allow_html=True)
-                ranking_df = df_filtrado.groupby(["producto", "tipo_venta", "unidad"]).agg({
-                    "precio_minimo": "min",
-                    "precio_promedio": "mean",
-                    "precio_maximo": "max",
-                    "variacion_precio": "mean"
-                }).reset_index().sort_values("precio_promedio", ascending=False)
+            # Fila 4: Ranking de Productos (Ancho completo para evitar recortes y scroll excesivo)
+            st.markdown("<h4 style='text-align: center; margin-top: 25px; margin-bottom: 12px; font-weight: 700;'>Ranking de Productos por Precio Promedio</h4>", unsafe_allow_html=True)
+            ranking_df = df_filtrado.groupby(["producto", "tipo_venta", "unidad"]).agg({
+                "precio_minimo": "min",
+                "precio_promedio": "mean",
+                "precio_maximo": "max",
+                "variacion_precio": "mean"
+            }).reset_index().sort_values("precio_promedio", ascending=False)
 
-                ranking_df.columns = ["Producto", "Tipo de Venta", "Unidad", "Mínimo (S/)", "Promedio (S/)", "Máximo (S/)", "Variación (S/)"]
-                for c in ["Mínimo (S/)", "Promedio (S/)", "Máximo (S/)", "Variación (S/)"]:
-                    ranking_df[c] = ranking_df[c].map(lambda x: f"{x:.2f}" if pd.notna(x) else "-")
+            ranking_df.columns = ["Producto", "Tipo de Venta", "Unidad", "Mínimo (S/)", "Promedio (S/)", "Máximo (S/)", "Variación (S/)"]
+            for c in ["Mínimo (S/)", "Promedio (S/)", "Máximo (S/)", "Variación (S/)"]:
+                ranking_df[c] = ranking_df[c].map(lambda x: f"{x:.2f}" if pd.notna(x) else "-")
 
-                st.dataframe(ranking_df, use_container_width=True, hide_index=True)
+            st.dataframe(ranking_df, use_container_width=True, hide_index=True)
 
             # Fila 4: Predicciones de IA Integradas en Visualizacion BI
             st.markdown("<hr style='border-color: #cbd5e1; margin: 40px 0 25px 0;'>", unsafe_allow_html=True)

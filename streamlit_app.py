@@ -757,76 +757,76 @@ with st.sidebar:
             st.session_state.pagina = label
             st.rerun()
             
-    pagina = st.session_state.pagina
+pagina = st.session_state.pagina
 
-    # --------------------------------------------------------------------------
-    # CONFIGURACIÓN DE CONTENEDOR PRINCIPAL Y ZONA DE FILTROS AL LADO DEL DASHBOARD
-    # --------------------------------------------------------------------------
-    if not df_analisis.empty and pagina in ["⑤ Capa de IA", "⑥ Capa Semántica & KPIs", "⑦ Visualización BI"]:
-        col_filtros, col_principal = st.columns([1.2, 4.0])
+# --------------------------------------------------------------------------
+# CONFIGURACIÓN DE CONTENEDOR PRINCIPAL Y ZONA DE FILTROS AL LADO DEL DASHBOARD
+# --------------------------------------------------------------------------
+if not df_analisis.empty and pagina in ["⑤ Capa de IA", "⑥ Capa Semántica & KPIs", "⑦ Visualización BI"]:
+    col_filtros, col_principal = st.columns([1.2, 4.0])
+    
+    with col_filtros:
+        st.markdown(
+            """
+            <div style="background-color: #ffffff; padding: 18px; border-radius: 10px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #3b82f6; padding-bottom: 6px;">Zona de Filtros</h3>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        # 1. Rango de Fechas
+        min_date = df_analisis["fecha"].min().date()
+        max_date = df_analisis["fecha"].max().date()
         
-        with col_filtros:
-            st.markdown(
-                """
-                <div style="background-color: #ffffff; padding: 18px; border-radius: 10px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px;">
-                    <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #3b82f6; padding-bottom: 6px;">Zona de Filtros</h3>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            # 1. Rango de Fechas
-            min_date = df_analisis["fecha"].min().date()
-            max_date = df_analisis["fecha"].max().date()
+        date_val = st.date_input(
+            "Rango de Fechas",
+            value=(min_date, max_date),
+            min_value=min_date,
+            max_value=max_date,
+            key="date_range_picker"
+        )
+        
+        if isinstance(date_val, (list, tuple)) and len(date_val) == 2:
+            start_date, end_date = date_val
+        else:
+            start_date = end_date = date_val[0] if isinstance(date_val, (list, tuple)) and len(date_val) > 0 else min_date
             
-            date_val = st.date_input(
-                "Rango de Fechas",
-                value=(min_date, max_date),
-                min_value=min_date,
-                max_value=max_date,
-                key="date_range_picker"
-            )
-            
-            if isinstance(date_val, (list, tuple)) and len(date_val) == 2:
-                start_date, end_date = date_val
-            else:
-                start_date = end_date = date_val[0] if isinstance(date_val, (list, tuple)) and len(date_val) > 0 else min_date
-                
-            # 2. Selección de Producto
-            productos_disponibles = sorted(df_analisis["producto"].dropna().unique().tolist())
-            select_all_prod = st.checkbox("Seleccionar todo", value=True, key="sel_all_prod")
-            
-            productos_seleccionados = []
-            if select_all_prod:
+        # 2. Selección de Producto
+        productos_disponibles = sorted(df_analisis["producto"].dropna().unique().tolist())
+        select_all_prod = st.checkbox("Seleccionar todo", value=True, key="sel_all_prod")
+        
+        productos_seleccionados = []
+        if select_all_prod:
+            productos_seleccionados = productos_disponibles
+        else:
+            with st.container(height=200):
+                for prod in productos_disponibles:
+                    if st.checkbox(prod, value=False, key=f"chk_prod_{prod}"):
+                        productos_seleccionados.append(prod)
+            if not productos_seleccionados:
                 productos_seleccionados = productos_disponibles
-            else:
-                with st.container(height=200):
-                    for prod in productos_disponibles:
-                        if st.checkbox(prod, value=False, key=f"chk_prod_{prod}"):
-                            productos_seleccionados.append(prod)
-                if not productos_seleccionados:
-                    productos_seleccionados = productos_disponibles
+        
+        # 3. Tipo de Mercado
+        st.markdown("**Tipo de Mercado**")
+        tipos_venta_disponibles = sorted(df_analisis["tipo_venta"].dropna().unique().tolist())
+        tipo_venta_selected = []
+        for tv in tipos_venta_disponibles:
+            if st.checkbox(tv, value=True, key=f"chk_tv_{tv}"):
+                tipo_venta_selected.append(tv)
+        if not tipo_venta_selected:
+            tipo_venta_selected = tipos_venta_disponibles
             
-            # 3. Tipo de Mercado
-            st.markdown("**Tipo de Mercado**")
-            tipos_venta_disponibles = sorted(df_analisis["tipo_venta"].dropna().unique().tolist())
-            tipo_venta_selected = []
-            for tv in tipos_venta_disponibles:
-                if st.checkbox(tv, value=True, key=f"chk_tv_{tv}"):
-                    tipo_venta_selected.append(tv)
-            if not tipo_venta_selected:
-                tipo_venta_selected = tipos_venta_disponibles
-                
-            # Aplicar filtrado
-            df_filtrado = df_analisis[
-                (df_analisis["fecha"].dt.date >= start_date) &
-                (df_analisis["fecha"].dt.date <= end_date) &
-                (df_analisis["producto"].isin(productos_seleccionados)) &
-                (df_analisis["tipo_venta"].isin(tipo_venta_selected))
-            ]
-        contenedor_principal = col_principal
-    else:
-        df_filtrado = df_analisis
-        contenedor_principal = st
+        # Aplicar filtrado
+        df_filtrado = df_analisis[
+            (df_analisis["fecha"].dt.date >= start_date) &
+            (df_analisis["fecha"].dt.date <= end_date) &
+            (df_analisis["producto"].isin(productos_seleccionados)) &
+            (df_analisis["tipo_venta"].isin(tipo_venta_selected))
+        ]
+    contenedor_principal = col_principal
+else:
+    df_filtrado = df_analisis
+    contenedor_principal = st
 
 with contenedor_principal:
     if "raw_df" not in st.session_state:

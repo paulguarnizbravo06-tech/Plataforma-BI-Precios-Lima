@@ -107,6 +107,41 @@ def aplicar_estilos() -> None:
                 box-shadow: none !important;
             }
             
+            /* Main Content Buttons Styling */
+            div.block-container div.stButton > button[kind="secondary"] {
+                background-color: #0f172a !important; /* Dark slate */
+                color: #ffffff !important;            /* High-contrast white text */
+                border: 1px solid #334155 !important;
+                border-radius: 6px !important;
+                font-weight: 600 !important;
+                transition: background-color 0.2s, color 0.2s, transform 0.1s !important;
+            }
+            div.block-container div.stButton > button[kind="secondary"]:hover {
+                background-color: #1e293b !important;
+                color: #38bdf8 !important;
+            }
+            div.block-container div.stButton > button[kind="secondary"]:active {
+                transform: scale(0.98) !important;
+            }
+            
+            div.block-container div.stButton > button[kind="primary"] {
+                background-color: #2563eb !important; /* Royal Blue */
+                color: #ffffff !important;            /* High-contrast white text */
+                border: 1px solid #1d4ed8 !important;
+                border-radius: 6px !important;
+                font-weight: 700 !important;
+                box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2) !important;
+                transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s !important;
+            }
+            div.block-container div.stButton > button[kind="primary"]:hover {
+                background-color: #1d4ed8 !important;
+                color: #ffffff !important;
+                box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3) !important;
+            }
+            div.block-container div.stButton > button[kind="primary"]:active {
+                transform: scale(0.98) !important;
+            }
+            
             /* Header and Titles */
             h1, h2, h3, h4, h5, h6 {
                 color: #0f172a !important;

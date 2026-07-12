@@ -585,34 +585,7 @@ def embellecer_grafico(fig, titulo, tipo="bar"):
 
 aplicar_estilos()
 
-st.markdown(
-    """
-    <div class="bi-topbar">
-        <h1>Plataforma BI Integrada - Monitoreo de Precios en Mercados de Lima</h1>
-        <p>Arquitectura cloud end-to-end: captura, staging, ETL, warehouse, analitica predictiva y visualizacion ejecutiva.</p>
-        <div class="bi-cloud-pill"><span class="bi-dot"></span> GitHub + Supabase PostgreSQL + Streamlit Community Cloud</div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
 
-cols = st.columns(4)
-for idx, (paso, titulo, detalle, estado, color) in enumerate(PASOS_FLUJO):
-    with cols[idx % 4]:
-        st.markdown(
-            f"""
-            <div class="bi-step-card">
-                <div class="bi-step-top">
-                    <span class="bi-step-badge" style="color:{color};">{paso}</span>
-                    <span class="bi-step-kicker">{titulo}</span>
-                </div>
-                <div class="bi-step-title">{titulo}</div>
-                <div class="bi-step-detail">{detalle}</div>
-                <div class="bi-step-foot"><span style="color:{color};font-weight:800;">{estado}</span></div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
 database_url = get_database_url()
 if not database_url:
     st.warning("Configura DATABASE_URL en Streamlit Secrets para conectar con Supabase.")
@@ -632,6 +605,7 @@ with st.sidebar:
     pagina = st.radio(
         "Modulo",
         [
+            "Pantalla General",
             "1. Fuentes de Datos",
             "2. Staging Area",
             "3. Proceso ETL",
@@ -713,7 +687,37 @@ if "ok_df" not in st.session_state:
 if "hechos_df" not in st.session_state:
     st.session_state.hechos_df = pd.DataFrame()
 
-if pagina == "1. Fuentes de Datos":
+if pagina == "Pantalla General":
+    st.markdown(
+        """
+        <div class="bi-topbar">
+            <h1>Plataforma BI Integrada - Monitoreo de Precios en Mercados de Lima</h1>
+            <p>Arquitectura cloud end-to-end: captura, staging, ETL, warehouse, analitica predictiva y visualizacion ejecutiva.</p>
+            <div class="bi-cloud-pill"><span class="bi-dot"></span> GitHub + Supabase PostgreSQL + Streamlit Community Cloud</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    cols = st.columns(4)
+    for idx, (paso, titulo, detalle, estado, color) in enumerate(PASOS_FLUJO):
+        with cols[idx % 4]:
+            st.markdown(
+                f"""
+                <div class="bi-step-card">
+                    <div class="bi-step-top">
+                        <span class="bi-step-badge" style="color:{color};">{paso}</span>
+                        <span class="bi-step-kicker">{titulo}</span>
+                    </div>
+                    <div class="bi-step-title">{titulo}</div>
+                    <div class="bi-step-detail">{detalle}</div>
+                    <div class="bi-step-foot"><span style="color:{color};font-weight:800;">{estado}</span></div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+elif pagina == "1. Fuentes de Datos":
     st.subheader("Fuentes de datos")
     archivo = st.file_uploader("Carga archivo SISAP en Excel o CSV", type=["xlsx", "xls", "csv"])
     if archivo:

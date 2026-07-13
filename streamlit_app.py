@@ -553,13 +553,11 @@ def insertar_dimensiones_y_hechos(engine, raw_ok: pd.DataFrame, hechos: pd.DataF
             conn.execute(text("delete from fact_precios"))
             conn.execute(text("delete from stg_precios_raw"))
 
+        # 1. Cargar stg_precios_raw en lote (Batch)
+        stg_params = []
         for _, row in raw_ok.iterrows():
             unidad = row.get("unidad_min") or row.get("unidad_may") or "Sin unidad"
-            conn.execute(text("""
-                insert into stg_precios_raw
-                (fecha_registro, producto_nombre, unidad_medida, precio_mayorista_orig, precio_minorista_orig, hoja_origen)
-                values (:fecha, :producto, :unidad, :may, :min, :hoja)
-            """), {
+            stg_params.append({
                 "fecha": pd.to_datetime(row["fecha"]).date(),
                 "producto": row.get("producto"),
                 "unidad": unidad,
@@ -567,64 +565,101 @@ def insertar_dimensiones_y_hechos(engine, raw_ok: pd.DataFrame, hechos: pd.DataF
                 "min": None if pd.isna(row.get("precio_minorista")) else float(row.get("precio_minorista")),
                 "hoja": row.get("hoja_origen"),
             })
+        if stg_params:
+            conn.execute(text("""
+                insert into stg_precios_raw
+                (fecha_registro, producto_nombre, unidad_medida, precio_mayorista_orig, precio_minorista_orig, hoja_origen)
+                values (:fecha, :producto, :unidad, :may, :min, :hoja)
+            """), stg_params)
 
-        insertados = 0
-        for _, row in hechos.iterrows():
-            fecha_dt = pd.to_datetime(row["fecha"])
-            anio = int(fecha_dt.year)
-            mes = int(fecha_dt.month)
-            dia = int(fecha_dt.day)
+        # 2. Pre-cargar dim_producto
+        unique_prods = hechos["producto"].dropna().unique()
+        for p in unique_prods:
+            conn.execute(text("insert into dim_producto(producto) values (:v) on conflict(producto) do nothing"), {"v": p})
+        prod_ids = {r[1]: r[0] for r in conn.execute(text("select id_producto, producto from dim_producto")).all()}
 
-            conn.execute(text("insert into dim_producto(producto) values (:v) on conflict(producto) do nothing"), {"v": row["producto"]})
-            conn.execute(text("insert into dim_anio(anio) values (:v) on conflict(anio) do nothing"), {"v": anio})
-            id_producto = obtener_id(conn, "dim_producto", "id_producto", "producto", row["producto"])
-            id_anio = obtener_id(conn, "dim_anio", "id_anio", "anio", anio)
+        # 3. Pre-cargar dim_anio
+        fechas_dt = pd.to_datetime(hechos["fecha"])
+        unique_years = sorted(list(set(fechas_dt.dt.year.dropna().tolist())))
+        for y in unique_years:
+            conn.execute(text("insert into dim_anio(anio) values (:v) on conflict(anio) do nothing"), {"v": int(y)})
+        anio_ids = {r[1]: r[0] for r in conn.execute(text("select id_anio, anio from dim_anio")).all()}
 
+        # 4. Pre-cargar dim_mes
+        unique_months = set()
+        for f in hechos["fecha"]:
+            f_dt = pd.to_datetime(f)
+            unique_months.add((int(f_dt.month), int(f_dt.year)))
+        for mes, anio in unique_months:
+            id_anio = anio_ids[anio]
             conn.execute(text("""
                 insert into dim_mes(mes, nombre_mes, id_anio)
                 values (:mes, :nombre, :id_anio)
                 on conflict(id_anio, mes) do nothing
             """), {"mes": mes, "nombre": MESES[mes - 1], "id_anio": id_anio})
-            id_mes = conn.execute(
-                text("select id_mes from dim_mes where id_anio = :id_anio and mes = :mes"),
-                {"id_anio": id_anio, "mes": mes},
-            ).scalar_one()
+        mes_ids = {(r[2], r[1]): r[0] for r in conn.execute(text("select id_mes, mes, id_anio from dim_mes")).all()}
 
+        # 5. Pre-cargar dim_tiempo
+        unique_dates = set()
+        for f in hechos["fecha"]:
+            f_dt = pd.to_datetime(f)
+            unique_dates.add((f_dt.date(), int(f_dt.day), int(f_dt.month), int(f_dt.year)))
+        for f, d, m, y in unique_dates:
+            id_anio = anio_ids[y]
+            id_mes = mes_ids[(id_anio, m)]
             conn.execute(text("""
                 insert into dim_tiempo(fecha, dia, id_mes)
                 values (:fecha, :dia, :id_mes)
                 on conflict(fecha) do nothing
-            """), {"fecha": fecha_dt.date(), "dia": dia, "id_mes": id_mes})
-            id_tiempo = obtener_id(conn, "dim_tiempo", "id_tiempo", "fecha", fecha_dt.date())
+            """), {"fecha": f, "dia": d, "id_mes": id_mes})
+        tiempo_ids = {r[1]: r[0] for r in conn.execute(text("select id_tiempo, fecha from dim_tiempo")).all()}
 
-            conn.execute(text("insert into dim_tipo_venta(tipo_venta) values (:v) on conflict(tipo_venta) do nothing"), {"v": row["tipo_venta"]})
-            id_tipo = obtener_id(conn, "dim_tipo_venta", "id_tipo_venta", "tipo_venta", row["tipo_venta"])
+        # 6. Pre-cargar dim_tipo_venta
+        unique_tipos = hechos["tipo_venta"].dropna().unique()
+        for t in unique_tipos:
+            conn.execute(text("insert into dim_tipo_venta(tipo_venta) values (:v) on conflict(tipo_venta) do nothing"), {"v": t})
+        tipo_ids = {r[1]: r[0] for r in conn.execute(text("select id_tipo_venta, tipo_venta from dim_tipo_venta")).all()}
 
+        # 7. Pre-cargar dim_unidad
+        unique_unidades = set()
+        for _, row in hechos.iterrows():
+            unique_unidades.add((row["unidad"], float(row["equivalencia"]), row["tipo_venta"]))
+        for u, eq, tv in unique_unidades:
+            id_tipo = tipo_ids[tv]
             conn.execute(text("""
                 insert into dim_unidad(unidad, equivalencia, id_tipo_venta)
                 values (:unidad, :equiv, :id_tipo)
                 on conflict(unidad, id_tipo_venta) do nothing
-            """), {"unidad": row["unidad"], "equiv": row["equivalencia"], "id_tipo": id_tipo})
-            id_unidad = conn.execute(
-                text("select id_unidad from dim_unidad where unidad = :unidad and id_tipo_venta = :id_tipo"),
-                {"unidad": row["unidad"], "id_tipo": id_tipo},
-            ).scalar_one()
+            """), {"unidad": u, "equiv": eq, "id_tipo": id_tipo})
+        unidad_ids = {(r[1], r[2]): r[0] for r in conn.execute(text("select id_col, unidad, id_tipo_venta from dim_unidad select id_unidad, unidad, id_tipo_venta from dim_unidad" if False else "select id_unidad, unidad, id_tipo_venta from dim_unidad")).all()}
 
-            conn.execute(text("""
-                insert into fact_precios
-                (id_producto, id_tiempo, id_unidad, id_tipo_venta, precio_min, precio_prom, precio_max)
-                values (:id_producto, :id_tiempo, :id_unidad, :id_tipo, :pmin, :pprom, :pmax)
-            """), {
-                "id_producto": id_producto,
-                "id_tiempo": id_tiempo,
-                "id_unidad": id_unidad,
-                "id_tipo": id_tipo,
+        # 8. Mapear hechos y preparar carga masiva (Batch Insert)
+        insert_params = []
+        for _, row in hechos.iterrows():
+            dt = pd.to_datetime(row["fecha"])
+            id_prod = prod_ids[row["producto"]]
+            id_t = tiempo_ids[dt.date()]
+            id_tv = tipo_ids[row["tipo_venta"]]
+            id_u = unidad_ids[(row["unidad"], id_tv)]
+            
+            insert_params.append({
+                "id_producto": id_prod,
+                "id_tiempo": id_t,
+                "id_unidad": id_u,
+                "id_tipo": id_tv,
                 "pmin": row["precio_min"],
                 "pprom": row["precio_prom"],
                 "pmax": row["precio_max"],
             })
-            insertados += 1
+            
+        if insert_params:
+            conn.execute(text("""
+                insert into fact_precios
+                (id_producto, id_tiempo, id_unidad, id_tipo_venta, precio_min, precio_prom, precio_max)
+                values (:id_producto, :id_tiempo, :id_unidad, :id_tipo, :pmin, :pprom, :pmax)
+            """), insert_params)
 
+        # 9. Insertar KPIs
         kpis = hechos.agg({
             "precio_prom": "mean",
             "precio_max": "max",
@@ -643,7 +678,8 @@ def insertar_dimensiones_y_hechos(engine, raw_ok: pd.DataFrame, hechos: pd.DataF
                 "v": None if pd.isna(valor) else float(valor),
                 "m": meta,
             })
-    return insertados
+            
+    return len(hechos)
 
 
 def obtener_datos_analisis(engine) -> pd.DataFrame:

@@ -92,6 +92,12 @@ def registrar_venta(
     current_day = datetime.now().strftime("%d/%m/%Y")
     
     df = pd.read_csv(ARCHIVO, sep=";")
+    
+    # Asegurar tipo object para columnas de texto (evita errores de tipo en pandas si están vacías)
+    for col in ["Productos", "Unidad de medida (Mayorista)", "Unidad de medida (Minorista)"]:
+        if col in df.columns:
+            df[col] = df[col].astype(object)
+            
     merged = False
     
     # Buscar si hoy ya existe un registro del mismo producto con la columna contraria vacía

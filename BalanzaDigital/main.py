@@ -38,7 +38,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-title">⚖️ BALANZA INTELIGENTE IoT</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">BALANZA INTELIGENTE IoT</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title">Simulador interactivo de pesaje en tiempo real con integración a la nube</div>', unsafe_allow_html=True)
 
 # Inicializar Session State
@@ -194,7 +194,7 @@ def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conec
 col_left, col_right = st.columns([5, 7])
 
 with col_left:
-    st.subheader("📦 Catálogo de Productos")
+    st.subheader("Catálogo de Productos")
     st.session_state.canal = st.radio("Canal de Venta", ["Minorista", "Mayorista"], horizontal=True)
     mercados_list = MERCADOS_MAYORISTAS if st.session_state.canal == "Mayorista" else MERCADOS_MINORISTAS
     mercado_seleccionado = st.selectbox("Mercado / Punto de Venta", mercados_list)
@@ -218,7 +218,7 @@ with col_left:
             st.session_state.simulando = True
 
 with col_right:
-    st.subheader("⚖️ Visualizador de Balanza")
+    st.subheader("Visualizador de Balanza")
     scale_placeholder = st.empty()
     
     if st.session_state.simulando:
@@ -283,7 +283,7 @@ with col_right:
         st.info("Datos IoT transmitidos al servidor en la nube (simulado).")
         
     st.markdown("---")
-    st.subheader("📋 Historial de Ventas Recientes")
+    st.subheader("Historial de Ventas Recientes")
     
     try:
         df = utilidades.obtener_historial()

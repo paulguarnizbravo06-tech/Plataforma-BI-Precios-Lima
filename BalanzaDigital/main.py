@@ -52,6 +52,8 @@ if "total" not in st.session_state:
     st.session_state.total = 0.0
 if "canal" not in st.session_state:
     st.session_state.canal = "Minorista"
+if "simulando" not in st.session_state:
+    st.session_state.simulando = False
 
 # Función de renderizado de imagen de la balanza
 def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conectado=True):

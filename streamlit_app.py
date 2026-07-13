@@ -491,15 +491,26 @@ def construir_hechos(df: pd.DataFrame) -> pd.DataFrame:
                 continue
             precio_min = pd.to_numeric(row.get(min_col), errors="coerce")
             precio_max = pd.to_numeric(row.get(max_col), errors="coerce")
+            
+            # Obtener y validar la equivalencia de la unidad de medida (ej. saco de 50kg -> equiv = 50.0)
+            equiv = pd.to_numeric(row.get(equiv_col), errors="coerce")
+            if pd.isna(equiv) or equiv <= 0:
+                equiv = 1.0
+                
+            # Normalizar los precios dividiendo entre la equivalencia para obtener el precio por unidad equivalente (ej. por kg o por litro)
+            precio_min_norm = float(precio_min) / equiv if not pd.isna(precio_min) else None
+            precio_prom_norm = float(precio_prom) / equiv
+            precio_max_norm = float(precio_max) / equiv if not pd.isna(precio_max) else None
+            
             filas.append({
                 "fecha": fecha.date(),
                 "producto": producto,
                 "tipo_venta": tipo,
                 "unidad": str(row.get(unidad_col) or "Sin unidad").strip(),
-                "equivalencia": None if pd.isna(row.get(equiv_col)) else float(row.get(equiv_col)),
-                "precio_min": None if pd.isna(precio_min) else float(precio_min),
-                "precio_prom": float(precio_prom),
-                "precio_max": None if pd.isna(precio_max) else float(precio_max),
+                "equivalencia": float(equiv),
+                "precio_min": precio_min_norm,
+                "precio_prom": precio_prom_norm,
+                "precio_max": precio_max_norm,
             })
     hechos = pd.DataFrame(filas)
     if not hechos.empty:

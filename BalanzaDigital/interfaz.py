@@ -668,7 +668,44 @@ class Interfaz:
         messagebox.showinfo("Correcto", f"Venta de {self.comboProducto.get()} ({self.canal}) registrada exitosamente.")
 
     def enviar(self):
-        messagebox.showinfo(
-            "Conexión IoT",
-            "Datos de ventas y telemetría de balanza sincronizados con el servidor en la nube."
+        from tkinter import simpledialog, messagebox
+        import json
+        
+        CONFIG_FILE = "config.json"
+        saved_pass = ""
+        if os.path.exists(CONFIG_FILE):
+            try:
+                with open(CONFIG_FILE, "r") as f:
+                    saved_pass = json.load(f).get("db_password", "")
+            except Exception:
+                pass
+                
+        password = simpledialog.askstring(
+            "Conexión Supabase IoT", 
+            "Ingrese su contraseña de Supabase:", 
+            show='*', 
+            initialvalue=saved_pass
         )
+        if password is not None:
+            # Guardar contraseña para comodidad
+            try:
+                with open(CONFIG_FILE, "w") as f:
+                    json.dump({"db_password": password}, f)
+            except Exception:
+                pass
+                
+            db_url = f"postgresql://postgres.ivimhckgfcerbdfjohlf:{password}@aws-1-us-west-2.pooler.supabase.com:6543/postgres"
+            
+            # Cambiar cursor a cargando
+            self.ventana.config(cursor="watch")
+            self.ventana.update()
+            
+            success, msg = enviar_datos_supabase(db_url)
+            
+            # Restaurar cursor normal
+            self.ventana.config(cursor="")
+            
+            if success:
+                messagebox.showinfo("Correcto", msg)
+            else:
+                messagebox.showerror("Error", msg)

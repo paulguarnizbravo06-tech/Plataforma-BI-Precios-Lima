@@ -157,3 +157,119 @@ def ultima_venta():
         return None
 
     return historial.iloc[-1]
+
+
+def enviar_datos_supabase(db_url):
+    """
+    Sincroniza todos los registros de ventas.csv con la tabla ventas_balanza en Supabase.
+    """
+    import sqlalchemy
+    from sqlalchemy import text
+    import pandas as pd
+    
+    if not os.path.exists(ARCHIVO):
+        return False, "No hay datos locales para enviar."
+        
+    try:
+        # Reemplazar postgresql:// o postgres:// con postgresql+pg8000:// para usar pg8000
+        if db_url.startswith("postgresql://"):
+            db_url = db_url.replace("postgresql://", "postgresql+pg8000://", 1)
+        elif db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql+pg8000://", 1)
+            
+        import ssl
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        
+        engine = sqlalchemy.create_engine(
+            db_url,
+            connect_args={"ssl_context": ssl_context},
+            pool_pre_ping=True
+        )
+        
+        df = pd.read_csv(ARCHIVO, sep=";")
+        if df.empty:
+            return True, "No hay registros en el historial."
+            
+        inserted = 0
+        with engine.begin() as conn:
+            # Crear la tabla si no existe (robusto para el usuario)
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS ventas_balanza (
+                    id SERIAL PRIMARY KEY,
+                    fecha TIMESTAMP NOT NULL,
+                    producto VARCHAR(100) NOT NULL,
+                    unidad_medida_mayorista VARCHAR(50),
+                    equiv_kg_lt_mayorista NUMERIC,
+                    mayorista_precio_min NUMERIC,
+                    mayorista_precio_prom NUMERIC,
+                    mayorista_precio_max NUMERIC,
+                    unidad_medida_minorista VARCHAR(50),
+                    equiv_kg_lt_minorista NUMERIC,
+                    minorista_precio_min NUMERIC,
+                    minorista_precio_prom NUMERIC,
+                    minorista_precio_max NUMERIC,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT uq_fecha_producto UNIQUE (fecha, producto)
+                )
+            """))
+            
+            for _, row in df.iterrows():
+                # Formatear fecha
+                raw_fecha = str(row["Fecha"])
+                try:
+                    fecha_parsed = datetime.strptime(raw_fecha, "%d/%m/%Y %H:%M:%S")
+                except ValueError:
+                    try:
+                        fecha_parsed = datetime.strptime(raw_fecha, "%d/%m/%Y")
+                    except ValueError:
+                        continue
+                
+                # Reemplazar NaN por None
+                params = {
+                    "fecha": fecha_parsed,
+                    "producto": str(row["Productos"]),
+                    "u_may": None if pd.isna(row["Unidad de medida (Mayorista)"]) else str(row["Unidad de medida (Mayorista)"]),
+                    "eq_may": None if pd.isna(row["Equiv. (kg./lt) (Mayorista)"]) else float(row["Equiv. (kg./lt) (Mayorista)"]),
+                    "may_min": None if pd.isna(row["Mayorista - Precio Min."]) else float(row["Mayorista - Precio Min."]),
+                    "may_prom": None if pd.isna(row["Mayorista - Precio Prom."]) else float(row["Mayorista - Precio Prom."]),
+                    "may_max": None if pd.isna(row["Mayorista - Precio Max."]) else float(row["Mayorista - Precio Max."]),
+                    "u_min": None if pd.isna(row["Unidad de medida (Minorista)"]) else str(row["Unidad de medida (Minorista)"]),
+                    "eq_min": None if pd.isna(row["Equiv. (kg./lt) (Minorista)"]) else float(row["Equiv. (kg./lt) (Minorista)"]),
+                    "min_min": None if pd.isna(row["Minorista - Precio Min."]) else float(row["Minorista - Precio Min."]),
+                    "min_prom": None if pd.isna(row["Minorista - Precio Prom."]) else float(row["Minorista - Precio Prom."]),
+                    "min_max": None if pd.isna(row["Minorista - Precio Max."]) else float(row["Minorista - Precio Max."])
+                }
+                
+                # Ejecutar INSERT ... ON CONFLICT
+                conn.execute(text("""
+                    INSERT INTO ventas_balanza (
+                        fecha, producto, 
+                        unidad_medida_mayorista, equiv_kg_lt_mayorista, 
+                        mayorista_precio_min, mayorista_precio_prom, mayorista_precio_max, 
+                        unidad_medida_minorista, equiv_kg_lt_minorista, 
+                        minorista_precio_min, minorista_precio_prom, minorista_precio_max
+                    ) VALUES (
+                        :fecha, :producto, 
+                        :u_may, :eq_may, 
+                        :may_min, :may_prom, :may_max, 
+                        :u_min, :eq_min, 
+                        :min_min, :min_prom, :min_max
+                    ) ON CONFLICT (fecha, producto) DO UPDATE SET
+                        unidad_medida_mayorista = EXCLUDED.unidad_medida_mayorista,
+                        equiv_kg_lt_mayorista = EXCLUDED.equiv_kg_lt_mayorista,
+                        mayorista_precio_min = EXCLUDED.mayorista_precio_min,
+                        mayorista_precio_prom = EXCLUDED.mayorista_precio_prom,
+                        mayorista_precio_max = EXCLUDED.mayorista_precio_max,
+                        unidad_medida_minorista = EXCLUDED.unidad_medida_minorista,
+                        equiv_kg_lt_minorista = EXCLUDED.equiv_kg_lt_minorista,
+                        minorista_precio_min = EXCLUDED.minorista_precio_min,
+                        minorista_precio_prom = EXCLUDED.minorista_precio_prom,
+                        minorista_precio_max = EXCLUDED.minorista_precio_max
+                """), params)
+                inserted += 1
+                
+        return True, f"Sincronizados {inserted} registros exitosamente con Supabase."
+    except Exception as e:
+        return False, f"Error al conectar/sincronizar: {e}"

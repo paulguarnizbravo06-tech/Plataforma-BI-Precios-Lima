@@ -195,6 +195,36 @@ col_left, col_right = st.columns([5, 7])
 
 with col_left:
     st.subheader("Catálogo de Productos")
+    
+    # Configuración de base de datos Supabase para IoT
+    db_url = None
+    try:
+        db_url = st.secrets.get("DATABASE_URL")
+    except Exception:
+        pass
+        
+    if not db_url:
+        import json
+        CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
+        saved_pass = ""
+        if os.path.exists(CONFIG_FILE):
+            try:
+                with open(CONFIG_FILE, "r") as f:
+                    saved_pass = json.load(f).get("db_password", "")
+            except Exception:
+                pass
+        
+        db_password = st.text_input("Contraseña Supabase IoT", value=saved_pass, type="password")
+        if db_password:
+            try:
+                with open(CONFIG_FILE, "w") as f:
+                    json.dump({"db_password": db_password}, f)
+            except Exception:
+                pass
+            db_url = f"postgresql://postgres.ivimhckgfcerbdfjohlf:{db_password}@aws-1-us-west-2.pooler.supabase.com:6543/postgres"
+    else:
+        st.info("📶 Supabase conectado via Secrets")
+        
     st.session_state.canal = st.radio("Canal de Venta", ["Minorista", "Mayorista"], horizontal=True)
     mercados_list = MERCADOS_MAYORISTAS if st.session_state.canal == "Mayorista" else MERCADOS_MINORISTAS
     mercado_seleccionado = st.selectbox("Mercado / Punto de Venta", mercados_list)
@@ -280,7 +310,15 @@ with col_right:
             st.rerun()
             
     if c_btn3.button("📡 Enviar IoT", use_container_width=True):
-        st.info("Datos IoT transmitidos al servidor en la nube (simulado).")
+        if not db_url:
+            st.error("Ingrese su contraseña de Supabase a la izquierda.")
+        else:
+            with st.spinner("Sincronizando con Supabase..."):
+                success, msg = utilidades.enviar_datos_supabase(db_url)
+                if success:
+                    st.success(msg)
+                else:
+                    st.error(msg)
         
     st.markdown("---")
     st.subheader("Historial de Ventas Recientes")

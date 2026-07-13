@@ -14,7 +14,7 @@ if BASE_DIR not in sys.path:
 
 from productos import *
 from balanza import Balanza
-import utilidades
+import utilidades_balanza as utilidades
 
 # Configurar ruta del CSV de ventas
 utilidades.ARCHIVO = os.path.join(BASE_DIR, "ventas.csv")

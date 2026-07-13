@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from productos import *
 from balanza import Balanza
-from utilidades import *
+from utilidades_balanza import *
 
 # Configuración del tema visual
 ctk.set_appearance_mode("dark")

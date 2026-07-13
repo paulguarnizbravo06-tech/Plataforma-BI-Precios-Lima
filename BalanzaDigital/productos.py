@@ -1,6 +1,6 @@
 # ==========================================
 # productos.py
-# Catálogo de productos e información de precios e imágenes
+# Catálogo de productos e información de precios, imágenes y unidades
 # ==========================================
 
 MERCADOS = [
@@ -16,6 +16,8 @@ PRODUCTOS_DB = {
         "categoria": "Tubérculos",
         "precio_minorista": 2.50,
         "precio_mayorista": 1.60,
+        "unidad_mayorista": "Saco",
+        "equiv_mayorista": 50.0,
         "imagen": "productos/papa.png"
     },
     "Tomate": {
@@ -23,6 +25,8 @@ PRODUCTOS_DB = {
         "categoria": "Verduras",
         "precio_minorista": 4.50,
         "precio_mayorista": 2.80,
+        "unidad_mayorista": "Cajón",
+        "equiv_mayorista": 20.0,
         "imagen": "productos/tomate.png"
     },
     "Cebolla": {
@@ -30,6 +34,8 @@ PRODUCTOS_DB = {
         "categoria": "Verduras",
         "precio_minorista": 3.00,
         "precio_mayorista": 1.80,
+        "unidad_mayorista": "Saco",
+        "equiv_mayorista": 45.0,
         "imagen": "productos/cebolla.png"
     },
     "Zanahoria": {
@@ -37,6 +43,8 @@ PRODUCTOS_DB = {
         "categoria": "Verduras",
         "precio_minorista": 3.80,
         "precio_mayorista": 2.20,
+        "unidad_mayorista": "Saco",
+        "equiv_mayorista": 50.0,
         "imagen": "productos/zanahoria.png"
     },
     "Choclo": {
@@ -44,6 +52,8 @@ PRODUCTOS_DB = {
         "categoria": "Cereales",
         "precio_minorista": 5.00,
         "precio_mayorista": 3.20,
+        "unidad_mayorista": "Ciento",
+        "equiv_mayorista": 40.0,
         "imagen": "productos/choclo.png"
     }
 }

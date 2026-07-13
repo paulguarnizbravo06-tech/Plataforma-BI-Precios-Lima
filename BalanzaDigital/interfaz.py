@@ -534,12 +534,12 @@ class Interfaz:
 
     def cargar_tabla_ventas(self):
         """
-        Lee el archivo ventas.csv y renderiza las últimas 6 ventas con el canal.
+        Lee el archivo ventas.csv y renderiza las últimas 6 ventas con la nueva estructura de 12 columnas.
         """
         for widget in self.table_frame.winfo_children():
             widget.destroy()
             
-        headers = ["Producto", "Canal", "Peso", "Precio", "Total"]
+        headers = ["Fecha", "Producto", "Mayorista", "Minorista"]
         for col_idx, text in enumerate(headers):
             lbl = ctk.CTkLabel(
                 self.table_frame,
@@ -550,7 +550,7 @@ class Interfaz:
             lbl.grid(row=0, column=col_idx, padx=6, pady=5, sticky="w")
             
         div = ctk.CTkFrame(self.table_frame, height=2, fg_color="#1e293b")
-        div.grid(row=1, column=0, columnspan=5, sticky="ew", pady=(0, 5))
+        div.grid(row=1, column=0, columnspan=4, sticky="ew", pady=(0, 5))
         
         try:
             df = obtener_historial()
@@ -561,23 +561,27 @@ class Interfaz:
                     font=("Arial", 11, "italic"),
                     text_color="#64748b"
                 )
-                lbl.grid(row=2, column=0, columnspan=5, pady=15)
+                lbl.grid(row=2, column=0, columnspan=4, pady=15)
                 return
                 
             ventas_recientes = df.tail(6).iloc[::-1]
             
             for row_idx, (_, row) in enumerate(ventas_recientes.iterrows(), start=2):
-                prod = str(row.get("Producto", "N/A"))
-                canal = str(row.get("Canal", "Minorista"))
-                peso = f"{float(row.get('Peso (kg)', 0.0)):.2f}"
-                precio = f"S/.{float(row.get('Precio/kg', 0.0)):.1f}"
-                total = f"S/.{float(row.get('Total', 0.0)):.1f}"
+                fecha_completa = str(row.get("Fecha", ""))
+                try:
+                    dt = datetime.strptime(fecha_completa, "%d/%m/%Y %H:%M:%S")
+                    fecha_corta = dt.strftime("%d/%m %H:%M")
+                except Exception:
+                    fecha_corta = fecha_completa[:11]
+                    
+                prod = str(row.get("Productos", "N/A"))
+                p_may = f"S/. {float(row.get('Mayorista - Precio Prom.', 0.0)):.2f}"
+                p_min = f"S/. {float(row.get('Minorista - Precio Prom.', 0.0)):.2f}"
                 
-                ctk.CTkLabel(self.table_frame, text=prod, font=("Arial", 11), text_color="#f8fafc").grid(row=row_idx, column=0, padx=6, pady=3, sticky="w")
-                ctk.CTkLabel(self.table_frame, text=canal[:5], font=("Arial", 11), text_color="#a78bfa" if canal == "Mayorista" else "#94a3b8").grid(row=row_idx, column=1, padx=6, pady=3, sticky="w")
-                ctk.CTkLabel(self.table_frame, text=peso, font=("Arial", 11), text_color="#10b981").grid(row=row_idx, column=2, padx=6, pady=3, sticky="w")
-                ctk.CTkLabel(self.table_frame, text=precio, font=("Arial", 11), text_color="#06b6d4").grid(row=row_idx, column=3, padx=6, pady=3, sticky="w")
-                ctk.CTkLabel(self.table_frame, text=total, font=("Arial", 11, "bold"), text_color="#fb923c").grid(row=row_idx, column=4, padx=6, pady=3, sticky="w")
+                ctk.CTkLabel(self.table_frame, text=fecha_corta, font=("Arial", 11), text_color="#94a3b8").grid(row=row_idx, column=0, padx=6, pady=3, sticky="w")
+                ctk.CTkLabel(self.table_frame, text=prod, font=("Arial", 11, "bold"), text_color="#f8fafc").grid(row=row_idx, column=1, padx=6, pady=3, sticky="w")
+                ctk.CTkLabel(self.table_frame, text=p_may, font=("Arial", 11), text_color="#a78bfa").grid(row=row_idx, column=2, padx=6, pady=3, sticky="w")
+                ctk.CTkLabel(self.table_frame, text=p_min, font=("Arial", 11), text_color="#06b6d4").grid(row=row_idx, column=3, padx=6, pady=3, sticky="w")
                 
         except Exception as e:
             print(f"Error al cargar tabla de ventas: {e}")
@@ -587,7 +591,7 @@ class Interfaz:
                 font=("Arial", 11, "italic"),
                 text_color="#ef4444"
             )
-            lbl.grid(row=2, column=0, columnspan=5, pady=15)
+            lbl.grid(row=2, column=0, columnspan=4, pady=15)
 
     def actualizar_producto_seleccionado(self, producto):
         self.precio = obtener_precio(producto, self.canal)

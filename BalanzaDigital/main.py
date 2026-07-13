@@ -16,7 +16,7 @@ from productos import *
 from balanza import Balanza
 import utilidades
 
-# Configurar ruta del CSV de ventas en utilidades para que esté en BalanzaDigital/ventas.csv
+# Configurar ruta del CSV de ventas
 utilidades.ARCHIVO = os.path.join(BASE_DIR, "ventas.csv")
 
 # Título de la página Streamlit
@@ -34,14 +34,6 @@ st.markdown("""
         font-size: 16px;
         color: #94a3b8;
         margin-bottom: 25px;
-    }
-    .product-card {
-        border: 1px solid #334155;
-        border-radius: 10px;
-        padding: 15px;
-        background-color: #1e293b;
-        margin-bottom: 12px;
-        text-align: center;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -93,7 +85,6 @@ def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conec
         font_digital_sm = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", 28)
         font_digital_lbl = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 14)
     except Exception:
-        # Intentar cargar fuentes del sistema Linux (común en Streamlit Cloud)
         try:
             font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 26)
             font_label = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16)
@@ -202,60 +193,41 @@ col_left, col_right = st.columns([5, 7])
 
 with col_left:
     st.subheader("📦 Catálogo de Productos")
-    
-    # Segmento de Canal de Venta
     st.session_state.canal = st.radio("Canal de Venta", ["Minorista", "Mayorista"], horizontal=True)
-    
-    # Configuración de Mercado
     mercado_seleccionado = st.selectbox("Mercado / Punto de Venta", MERCADOS)
-    
     st.markdown("---")
     
-    # Renderizar el catálogo de productos interactivo
     for prod_name, info in PRODUCTOS_DB.items():
         price = info["precio_mayorista"] if st.session_state.canal == "Mayorista" else info["precio_minorista"]
-        
-        # Grid para cada producto
         c1, c2, c3 = st.columns([2, 5, 3])
         
-        # Imagen
         img_path = os.path.join(BASE_DIR, info["imagen"])
         if os.path.exists(img_path):
             c1.image(img_path, width=50)
             
-        # Detalles
         c2.markdown(f"**{prod_name.upper()}** (Cod: {info['codigo']})<br><span style='color:#fb923c; font-size:13px;'>Precio: S/. {price:.2f} / kg</span>", unsafe_allow_html=True)
         
-        # Botón para cargar en la balanza
         if c3.button("⚖️ Cargar", key=f"load_{prod_name}"):
             st.session_state.selected_product = prod_name
             st.session_state.precio = price
             st.session_state.peso = 0.0
             st.session_state.total = 0.0
-            st.session_state.simulando = True # Activar simulación automática
+            st.session_state.simulando = True
 
 with col_right:
     st.subheader("⚖️ Visualizador de Balanza")
-    
-    # Marcador de imagen de balanza
     scale_placeholder = st.empty()
     
-    # Mostrar estado actual o correr simulación
     if st.session_state.simulando:
         st.session_state.simulando = False
-        # Simular pesaje animado
         peso_final = round(random.uniform(0.50, 8.00), 3)
         peso_act = 0.0
         
-        # Ciclo de animación
         while peso_act < peso_final:
             peso_act += round(random.uniform(0.15, 0.45), 3)
             if peso_act > peso_final:
                 peso_act = peso_final
-            
             total_act = round(peso_act * st.session_state.precio, 2)
-            
-            # Generar imagen
             pil_img = generar_imagen_pantalla(
                 peso_act, 
                 st.session_state.precio, 
@@ -267,12 +239,10 @@ with col_right:
             scale_placeholder.image(pil_img, use_container_width=True)
             time.sleep(0.05)
             
-        # Actualizar valores finales
         st.session_state.peso = peso_final
         st.session_state.total = round(peso_final * st.session_state.precio, 2)
         st.rerun()
     else:
-        # Generar imagen con estado estático
         pil_img = generar_imagen_pantalla(
             st.session_state.peso, 
             st.session_state.precio, 
@@ -283,7 +253,6 @@ with col_right:
         )
         scale_placeholder.image(pil_img, use_container_width=True)
         
-    # Botones de Acción
     c_btn1, c_btn2, c_btn3 = st.columns(3)
     
     if c_btn1.button("⚖️ Simular Peso", use_container_width=True):
@@ -303,8 +272,6 @@ with col_right:
                 st.session_state.total
             )
             st.success(f"Venta registrada: {st.session_state.selected_product} ({st.session_state.canal})")
-            
-            # Resetear estado
             st.session_state.peso = 0.0
             st.session_state.total = 0.0
             st.rerun()
@@ -315,7 +282,6 @@ with col_right:
     st.markdown("---")
     st.subheader("📋 Historial de Ventas Recientes")
     
-    # Mostrar tabla de historial
     try:
         df = utilidades.obtener_historial()
         if df.empty:
@@ -323,7 +289,7 @@ with col_right:
         else:
             df_recientes = df.tail(6).iloc[::-1]
             st.dataframe(
-                df_recientes[["Fecha", "Mercado", "Canal", "Producto", "Peso (kg)", "Precio/kg", "Total"]],
+                df_recientes,
                 use_container_width=True,
                 hide_index=True
             )

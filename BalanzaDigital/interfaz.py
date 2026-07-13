@@ -64,10 +64,10 @@ class Interfaz:
         img = self.base_img.copy()
         draw = ImageDraw.Draw(img)
         
-        # Coordenadas ajustadas para no salirse de la pantalla física en balanza.png
-        x_min, x_max = 252, 948
-        y_min, y_max = 120, 552
-        x_mid = 560
+        # Coordenadas exactas de la pantalla digital (dentro del bisel físico) de balanza.png
+        x_min, x_max = 309, 935
+        y_min, y_max = 147, 552
+        x_mid = 590
         
         # Cargar fuentes desde el directorio local para consistencia en la nube
         import os
@@ -76,24 +76,24 @@ class Interfaz:
         f_bold = os.path.join(BASE_DIR, "arialbd.ttf")
         
         try:
-            font_title = ImageFont.truetype(f_bold, 30) # Nombre producto
-            font_label = ImageFont.truetype(f_reg, 16)   # Etiquetas secundarias
-            font_label_bold = ImageFont.truetype(f_bold, 18) # Contenido secundario negrita
-            font_digital_lg = ImageFont.truetype(f_bold, 68) # Peso digital grande
-            font_digital_sm = ImageFont.truetype(f_bold, 30) # Precios digital mediano
-            font_digital_lbl = ImageFont.truetype(f_reg, 14)  # Etiquetas pantalla digital
-            font_drag_lg = ImageFont.truetype(f_bold, 36)   # Texto de arrastrar grande
-            font_drag_sm = ImageFont.truetype(f_reg, 20)     # Texto de arrastrar chico
+            font_title = ImageFont.truetype(f_bold, 26) # Nombre producto
+            font_label = ImageFont.truetype(f_reg, 15)   # Etiquetas secundarias
+            font_label_bold = ImageFont.truetype(f_bold, 16) # Contenido secundario negrita
+            font_digital_lg = ImageFont.truetype(f_bold, 56) # Peso digital grande
+            font_digital_sm = ImageFont.truetype(f_bold, 26) # Precios digital mediano
+            font_digital_lbl = ImageFont.truetype(f_reg, 13)  # Etiquetas pantalla digital
+            font_drag_lg = ImageFont.truetype(f_bold, 32)   # Texto de arrastrar grande
+            font_drag_sm = ImageFont.truetype(f_reg, 18)     # Texto de arrastrar chico
         except Exception as e:
             try:
-                font_title = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 30)
-                font_label = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 16)
-                font_label_bold = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 18)
-                font_digital_lg = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 68)
-                font_digital_sm = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 30)
-                font_digital_lbl = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 14)
-                font_drag_lg = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 36)
-                font_drag_sm = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 20)
+                font_title = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 26)
+                font_label = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 15)
+                font_label_bold = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 16)
+                font_digital_lg = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 56)
+                font_digital_sm = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 26)
+                font_digital_lbl = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 13)
+                font_drag_lg = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 32)
+                font_drag_sm = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 18)
             except Exception:
                 font_title = ImageFont.load_default()
                 font_label = ImageFont.load_default()
@@ -111,27 +111,30 @@ class Interfaz:
             # Borde de zona de soltado en color cian brillante (neon)
             draw.rectangle([(x_min + 15, y_min + 15), (x_max - 15, y_max - 15)], outline="#22d3ee", width=5)
             
+            # Centro de la pantalla
+            center_x = (x_min + x_max) // 2
+            
             # Texto principal
             txt_principal = "📥 DEPOSITAR AQUÍ"
-            draw.text((600 - 150, 240), txt_principal, fill="#22d3ee", font=font_drag_lg)
+            draw.text((center_x - 130, 240), txt_principal, fill="#22d3ee", font=font_drag_lg)
             
             # Nombre del producto arrastrado
             txt_prod = f"Cargar: {self.producto_arrastrado.upper()}"
-            draw.text((600 - 100, 310), txt_prod, fill="#ffffff", font=font_drag_sm)
+            draw.text((center_x - 90, 310), txt_prod, fill="#ffffff", font=font_drag_sm)
             
             # Subtexto
             txt_ayuda = "Suelte el ratón sobre la balanza para pesar"
-            draw.text((600 - 180, 360), txt_ayuda, fill="#94a3b8", font=font_label)
+            draw.text((center_x - 180, 360), txt_ayuda, fill="#94a3b8", font=font_label)
             
             # Estado del sistema
-            draw.text((600 - 65, 480), "MODO DETECCIÓN", fill="#fb923c", font=font_label_bold)
+            draw.text((center_x - 65, 480), "MODO DETECCIÓN", fill="#fb923c", font=font_label_bold)
             
             return img
 
         # --- CASO B: PANTALLA NORMAL ---
         # 1. Dibujar Fondos de las Secciones
-        draw.rectangle([(x_min, y_min), (x_mid, y_max)], fill="#f8fafc") # Detalle del Producto
-        draw.rectangle([(x_mid, y_min), (x_max, y_max)], fill="#090d16") # Pantalla digital
+        draw.rectangle([(x_min, y_min), (x_mid, y_max)], fill="#f8fafc") # Detalle del Producto (blanco)
+        draw.rectangle([(x_mid, y_min), (x_max, y_max)], fill="#090d16") # Pantalla digital (azul oscuro)
         
         # Bordes y división
         draw.rectangle([(x_min, y_min), (x_max, y_max)], outline="#334155", width=3)
@@ -154,59 +157,60 @@ class Interfaz:
                     bbox = p_img.getbbox()
                     if bbox:
                         p_img = p_img.crop(bbox)
-                    p_img.thumbnail((180, 180), Image.Resampling.LANCZOS)
-                    px = 402 - p_img.width // 2
-                    py = 230 - p_img.height // 2 # Centrado vertical entre Y=115 e Y=345
+                    p_img.thumbnail((150, 150), Image.Resampling.LANCZOS)
+                    # Centro horizontal de la sección izquierda (309 a 590 es X=449)
+                    px = 449 - p_img.width // 2
+                    py = 233 - p_img.height // 2 # Centro vertical entre Y=147 e Y=320
                     img.paste(p_img, (px, py), p_img)
                 except Exception as ex:
                     print(f"Error al cargar la imagen del producto en pantalla: {ex}")
             
-            # Textos del producto
-            draw.text((270, 340), nombre.upper(), fill="#0f172a", font=font_title)
-            draw.text((270, 395), "Categoría:", fill="#64748b", font=font_label)
-            draw.text((270, 420), categoria, fill="#1e293b", font=font_label_bold)
-            draw.text((270, 480), "Código:", fill="#64748b", font=font_label)
-            draw.text((365, 480), codigo, fill="#0f172a", font=font_label_bold)
+            # Textos del producto a la izquierda (X=324)
+            draw.text((324, 340), nombre.upper(), fill="#0f172a", font=font_title)
+            draw.text((324, 395), "Categoría:", fill="#64748b", font=font_label)
+            draw.text((324, 420), categoria, fill="#1e293b", font=font_label_bold)
+            draw.text((324, 480), "Código:", fill="#64748b", font=font_label)
+            draw.text((399, 480), codigo, fill="#0f172a", font=font_label_bold)
             
-        # Pegar icono WiFi en la esquina
+        # Pegar icono WiFi en la esquina superior derecha
         if conectado and os.path.exists("iconos/wifi.png"):
             try:
                 wifi_img = Image.open("iconos/wifi.png").convert("RGBA")
                 wifi_img.thumbnail((24, 24), Image.Resampling.LANCZOS)
-                img.paste(wifi_img, (905, 135), wifi_img)
+                img.paste(wifi_img, (895, 162), wifi_img)
             except Exception as ex:
                 print(f"Error al cargar wifi icon: {ex}")
                 
-        # Cabecera digital
+        # Cabecera digital (X=610)
         mercado = self.comboMercado.get()
         date_str = datetime.now().strftime("%d/%m/%Y %H:%M")
-        draw.text((590, 135), mercado[:18], fill="#38bdf8", font=font_label_bold)
-        draw.text((590, 165), date_str, fill="#64748b", font=font_label)
+        draw.text((610, 160), mercado[:16], fill="#38bdf8", font=font_label_bold)
+        draw.text((610, 190), date_str, fill="#64748b", font=font_label)
         
         # 1. Peso
-        draw.text((590, 210), "PESO (kg)", fill="#94a3b8", font=font_digital_lbl)
+        draw.text((610, 230), "PESO (kg)", fill="#94a3b8", font=font_digital_lbl)
         peso_str = f"{self.peso:.3f} kg"
-        draw.text((590, 230), peso_str, fill="#10b981", font=font_digital_lg)
+        draw.text((610, 250), peso_str, fill="#10b981", font=font_digital_lg)
         
-        # Separador horizontal
-        draw.line([(590, 315), (925, 315)], fill="#1e293b", width=1)
+        # Separador horizontal (de 610 a 915)
+        draw.line([(610, 335), (915, 335)], fill="#1e293b", width=1)
         
         # 2. Precio Unitario
-        draw.text((590, 335), "PRECIO / kg", fill="#94a3b8", font=font_digital_lbl)
+        draw.text((610, 350), "PRECIO / kg", fill="#94a3b8", font=font_digital_lbl)
         precio_str = f"S/. {self.precio:.2f}"
-        draw.text((590, 355), precio_str, fill="#06b6d4", font=font_digital_sm)
+        draw.text((610, 370), precio_str, fill="#06b6d4", font=font_digital_sm)
         
         # 3. Total
-        draw.text((760, 335), "TOTAL A PAGAR", fill="#94a3b8", font=font_digital_lbl)
+        draw.text((750, 350), "TOTAL A PAGAR", fill="#94a3b8", font=font_digital_lbl)
         total_str = f"S/. {self.total:.2f}"
-        draw.text((760, 355), total_str, fill="#fb923c", font=font_digital_sm)
+        draw.text((750, 370), total_str, fill="#fb923c", font=font_digital_sm)
         
         # Estado de conexión y Canal de venta
-        draw.text((590, 500), "🟢 IoT ONLINE", fill="#10b981", font=font_label_bold)
+        draw.text((610, 500), "🟢 IoT ONLINE", fill="#10b981", font=font_label_bold)
         
         canal_text = f"CANAL: {self.canal.upper()}"
-        canal_color = "#38bdf8" if self.canal == "Minorista" else "#a78bfa" # Azul claro o Púrpura claro
-        draw.text((760, 500), canal_text, fill=canal_color, font=font_label_bold)
+        canal_color = "#38bdf8" if self.canal == "Minorista" else "#a78bfa"
+        draw.text((750, 500), canal_text, fill=canal_color, font=font_label_bold)
         
         # --- DIBUJAR PRODUCTO EN LA BANDEJA DE LA BALANZA ---
         if info:

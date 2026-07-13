@@ -64,9 +64,9 @@ def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conec
     img = base_img.copy()
     draw = ImageDraw.Draw(img)
     
-    x_min, x_max = 252, 948
-    y_min, y_max = 120, 552
-    x_mid = 560
+    x_min, x_max = 309, 935
+    y_min, y_max = 147, 552
+    x_mid = 590
     
     # Fondos
     draw.rectangle([(x_min, y_min), (x_mid, y_max)], fill="#f8fafc")
@@ -81,20 +81,20 @@ def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conec
     f_bold = os.path.join(BASE_DIR, "arialbd.ttf")
     
     try:
-        font_title = ImageFont.truetype(f_bold, 30)
-        font_label = ImageFont.truetype(f_reg, 16)
-        font_label_bold = ImageFont.truetype(f_bold, 18)
-        font_digital_lg = ImageFont.truetype(f_bold, 68)
-        font_digital_sm = ImageFont.truetype(f_bold, 30)
-        font_digital_lbl = ImageFont.truetype(f_reg, 14)
+        font_title = ImageFont.truetype(f_bold, 26)
+        font_label = ImageFont.truetype(f_reg, 15)
+        font_label_bold = ImageFont.truetype(f_bold, 16)
+        font_digital_lg = ImageFont.truetype(f_bold, 56)
+        font_digital_sm = ImageFont.truetype(f_bold, 26)
+        font_digital_lbl = ImageFont.truetype(f_reg, 13)
     except Exception:
         try:
-            font_title = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 30)
-            font_label = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 16)
-            font_label_bold = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 18)
-            font_digital_lg = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 68)
-            font_digital_sm = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 30)
-            font_digital_lbl = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 14)
+            font_title = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 26)
+            font_label = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 15)
+            font_label_bold = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 16)
+            font_digital_lg = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 56)
+            font_digital_sm = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 26)
+            font_digital_lbl = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 13)
         except Exception:
             font_title = ImageFont.load_default()
             font_label = ImageFont.load_default()
@@ -119,54 +119,55 @@ def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conec
                 bbox = p_img.getbbox()
                 if bbox:
                     p_img = p_img.crop(bbox)
-                p_img.thumbnail((180, 180), Image.Resampling.LANCZOS)
-                px = 402 - p_img.width // 2
-                py = 230 - p_img.height // 2
+                p_img.thumbnail((150, 150), Image.Resampling.LANCZOS)
+                # Centro horizontal de la sección izquierda (309 a 590 es X=449)
+                px = 449 - p_img.width // 2
+                py = 233 - p_img.height // 2 # Centro vertical entre Y=147 e Y=320
                 img.paste(p_img, (px, py), p_img)
             except Exception as ex:
                 pass
                 
-        # Textos de producto
-        draw.text((270, 340), nombre.upper(), fill="#0f172a", font=font_title)
-        draw.text((270, 395), "Categoría:", fill="#64748b", font=font_label)
-        draw.text((270, 420), categoria, fill="#1e293b", font=font_label_bold)
-        draw.text((270, 480), "Código:", fill="#64748b", font=font_label)
-        draw.text((365, 480), codigo, fill="#0f172a", font=font_label_bold)
+        # Textos de producto (alineados a la izquierda en X=324)
+        draw.text((324, 340), nombre.upper(), fill="#0f172a", font=font_title)
+        draw.text((324, 395), "Categoría:", fill="#64748b", font=font_label)
+        draw.text((324, 420), categoria, fill="#1e293b", font=font_label_bold)
+        draw.text((324, 480), "Código:", fill="#64748b", font=font_label)
+        draw.text((399, 480), codigo, fill="#0f172a", font=font_label_bold)
         
-    # Pegar icono WiFi
+    # Pegar icono WiFi (X=895, Y=162)
     if conectado and os.path.exists(wifi_img_path):
         try:
             wifi_img = Image.open(wifi_img_path).convert("RGBA")
             wifi_img.thumbnail((24, 24), Image.Resampling.LANCZOS)
-            img.paste(wifi_img, (905, 135), wifi_img)
+            img.paste(wifi_img, (895, 162), wifi_img)
         except Exception:
             pass
             
-    # Cabecera digital
+    # Cabecera digital (X=610)
     date_str = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-    draw.text((590, 135), mercado[:18], fill="#38bdf8", font=font_label_bold)
-    draw.text((590, 165), date_str, fill="#64748b", font=font_label)
+    draw.text((610, 160), mercado[:16], fill="#38bdf8", font=font_label_bold)
+    draw.text((610, 190), date_str, fill="#64748b", font=font_label)
     
     # Peso
-    draw.text((590, 210), "PESO (kg)", fill="#94a3b8", font=font_digital_lbl)
+    draw.text((610, 230), "PESO (kg)", fill="#94a3b8", font=font_digital_lbl)
     peso_str = f"{peso:.3f} kg"
-    draw.text((590, 230), peso_str, fill="#10b981", font=font_digital_lg)
+    draw.text((610, 250), peso_str, fill="#10b981", font=font_digital_lg)
     
-    # Separador
-    draw.line([(590, 315), (925, 315)], fill="#1e293b", width=1)
+    # Separador horizontal (de 610 a 915)
+    draw.line([(610, 335), (915, 335)], fill="#1e293b", width=1)
     
     # Precio Unitario
-    draw.text((590, 335), "PRECIO / kg", fill="#94a3b8", font=font_digital_lbl)
+    draw.text((610, 350), "PRECIO / kg", fill="#94a3b8", font=font_digital_lbl)
     precio_str = f"S/. {precio:.2f}"
-    draw.text((590, 355), precio_str, fill="#06b6d4", font=font_digital_sm)
+    draw.text((610, 370), precio_str, fill="#06b6d4", font=font_digital_sm)
     
     # Total
-    draw.text((750, 335), "TOTAL A PAGAR", fill="#94a3b8", font=font_digital_lbl)
+    draw.text((750, 350), "TOTAL A PAGAR", fill="#94a3b8", font=font_digital_lbl)
     total_str = f"S/. {total:.2f}"
-    draw.text((750, 355), total_str, fill="#fb923c", font=font_digital_sm)
+    draw.text((750, 370), total_str, fill="#fb923c", font=font_digital_sm)
     
     # Conexión y Canal
-    draw.text((590, 500), "🟢 IoT ONLINE", fill="#10b981", font=font_label_bold)
+    draw.text((610, 500), "🟢 IoT ONLINE", fill="#10b981", font=font_label_bold)
     canal_text = f"CANAL: {canal.upper()}"
     canal_color = "#38bdf8" if canal == "Minorista" else "#a78bfa"
     draw.text((750, 500), canal_text, fill=canal_color, font=font_label_bold)

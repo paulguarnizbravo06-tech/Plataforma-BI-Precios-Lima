@@ -376,11 +376,12 @@ class Interfaz:
         
         self.comboMercado = ctk.CTkOptionMenu(
             config_frame,
-            values=MERCADOS,
+            values=MERCADOS_MINORISTAS,
             font=("Arial", 13),
             dropdown_font=("Arial", 13),
             command=lambda _: self.actualizar_imagen_balanza()
         )
+        self.comboMercado.set(MERCADOS_MINORISTAS[0])
         self.comboMercado.pack(padx=15, pady=(0, 15), fill="x")
         
         # Selector de Canal de Venta (Minorista / Mayorista)
@@ -543,9 +544,18 @@ class Interfaz:
     # ---------------------------------
     def cambiar_canal(self, canal):
         """
-        Cambia el canal seleccionado (Minorista/Mayorista) y recalcula.
+        Cambia el canal seleccionado (Minorista/Mayorista), actualiza los mercados del combobox y recalcula.
         """
         self.canal = canal
+        
+        # Actualizar dinámicamente los mercados en el combobox según el canal
+        if self.canal == "Mayorista":
+            self.comboMercado.configure(values=MERCADOS_MAYORISTAS)
+            self.comboMercado.set(MERCADOS_MAYORISTAS[0])
+        else:
+            self.comboMercado.configure(values=MERCADOS_MINORISTAS)
+            self.comboMercado.set(MERCADOS_MINORISTAS[0])
+            
         producto = self.comboProducto.get()
         self.precio = obtener_precio(producto, self.canal)
         self.total = round(self.peso * self.precio, 2)

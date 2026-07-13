@@ -198,7 +198,8 @@ col_left, col_right = st.columns([5, 7])
 with col_left:
     st.subheader("📦 Catálogo de Productos")
     st.session_state.canal = st.radio("Canal de Venta", ["Minorista", "Mayorista"], horizontal=True)
-    mercado_seleccionado = st.selectbox("Mercado / Punto de Venta", MERCADOS)
+    mercados_list = MERCADOS_MAYORISTAS if st.session_state.canal == "Mayorista" else MERCADOS_MINORISTAS
+    mercado_seleccionado = st.selectbox("Mercado / Punto de Venta", mercados_list)
     st.markdown("---")
     
     for prod_name, info in PRODUCTOS_DB.items():

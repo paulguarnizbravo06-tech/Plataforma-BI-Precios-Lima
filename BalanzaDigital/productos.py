@@ -3,11 +3,31 @@
 # Catálogo de productos e información de precios, imágenes y unidades
 # ==========================================
 
-MERCADOS = [
-    "Mercado Central",
-    "Mercado Mayorista",
-    "Mercado San José",
-    "Supermercado Metro"
+MERCADOS_MAYORISTAS = [
+    "Gran Mercado Mayorista de Lima (GMML) – Santa Anita",
+    "Mercado Mayorista de Frutas N.° 2 – La Victoria"
+]
+
+MERCADOS_MINORISTAS = [
+    "Mercado N.° 1 Surquillo",
+    "Mercado N.° 2 Surquillo",
+    "Mercado Lobatón (Lince)",
+    "Mercado Magdalena",
+    "Mercado Conzac (Los Olivos)",
+    "Mercado Caquetá (Rímac)",
+    "Mercado Unicachi (Comas/Independencia)",
+    "Mercado San José (Jesús María)",
+    "Mercado El Ermitaño (Independencia)",
+    "Mercado Santa Rosa (Ate)",
+    "Mercado Villa María (Villa María del Triunfo)",
+    "Mercado Ciudad de Dios (San Juan de Miraflores)",
+    "Mercado Huamantanga (Puente Piedra)",
+    "Mercado Cooperativa Universal (Santa Anita)",
+    "Mercado Virgen del Carmen (Comas)",
+    "Mercado Túpac Amaru (Comas)",
+    "Mercado José Gálvez (Villa María del Triunfo)",
+    "Mercado Cooperativa Santa Rosa (San Martín de Porres)",
+    "Mercado Palermo (La Victoria)"
 ]
 
 PRODUCTOS_DB = {

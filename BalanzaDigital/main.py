@@ -336,5 +336,33 @@ with col_right:
                 use_container_width=True,
                 hide_index=True
             )
+            
+            # Botones de descarga de Excel y CSV
+            col_dl1, col_dl2 = st.columns(2)
+            
+            # 1. Descarga CSV
+            csv_data = df.to_csv(index=False, sep=";").encode("utf-8-sig")
+            col_dl1.download_button(
+                label="📥 Descargar CSV",
+                data=csv_data,
+                file_name="ventas_balanza.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+            
+            # 2. Descarga Excel
+            import io
+            buffer = io.BytesIO()
+            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False, sheet_name="Ventas")
+            excel_data = buffer.getvalue()
+            
+            col_dl2.download_button(
+                label="📥 Descargar Excel",
+                data=excel_data,
+                file_name="ventas_balanza.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
     except Exception as e:
         st.error(f"Error al leer historial de ventas: {e}")

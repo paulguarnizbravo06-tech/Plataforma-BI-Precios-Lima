@@ -459,7 +459,35 @@ class Interfaz:
             height=200,
             corner_radius=10
         )
-        self.table_frame.pack(padx=20, pady=(0, 15), fill="both", expand=True)
+        self.table_frame.pack(padx=20, pady=(0, 5), fill="both", expand=True)
+        
+        # Botones de exportación Excel / CSV
+        export_frame = ctk.CTkFrame(panel_ctrl, fg_color="transparent")
+        export_frame.pack(padx=20, pady=(0, 15), fill="x")
+        
+        self.btnExportExcel = ctk.CTkButton(
+            export_frame,
+            text="📥 EXCEL",
+            font=("Arial", 12, "bold"),
+            fg_color="#10b981",
+            hover_color="#059669",
+            height=32,
+            width=100,
+            command=self.exportar_excel
+        )
+        self.btnExportExcel.pack(side="left", expand=True, padx=(0, 5), fill="x")
+        
+        self.btnExportCSV = ctk.CTkButton(
+            export_frame,
+            text="📥 CSV",
+            font=("Arial", 12, "bold"),
+            fg_color="#06b6d4",
+            hover_color="#0891b2",
+            height=32,
+            width=100,
+            command=self.exportar_csv
+        )
+        self.btnExportCSV.pack(side="right", expand=True, padx=(5, 0), fill="x")
 
     def crear_panel_balanza(self):
         panel_bal = ctk.CTkFrame(self.ventana, corner_radius=15, fg_color="transparent")
@@ -709,3 +737,45 @@ class Interfaz:
                 messagebox.showinfo("Correcto", msg)
             else:
                 messagebox.showerror("Error", msg)
+
+    def exportar_excel(self):
+        from tkinter import filedialog, messagebox
+        import pandas as pd
+        
+        try:
+            df = obtener_historial()
+            if df.empty:
+                messagebox.showwarning("Atención", "No hay datos en el historial para exportar.")
+                return
+                
+            path = filedialog.asksaveasfilename(
+                defaultextension=".xlsx",
+                filetypes=[("Archivos de Excel", "*.xlsx")],
+                title="Guardar como Excel"
+            )
+            if path:
+                df.to_excel(path, index=False)
+                messagebox.showinfo("Éxito", f"Historial exportado correctamente a:\n{path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo exportar a Excel: {e}")
+
+    def exportar_csv(self):
+        from tkinter import filedialog, messagebox
+        import shutil
+        
+        try:
+            df = obtener_historial()
+            if df.empty:
+                messagebox.showwarning("Atención", "No hay datos en el historial para exportar.")
+                return
+                
+            path = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("Archivos CSV", "*.csv")],
+                title="Guardar como CSV"
+            )
+            if path:
+                shutil.copy2(ARCHIVO, path)
+                messagebox.showinfo("Éxito", f"Historial exportado correctamente a:\n{path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo exportar a CSV: {e}")

@@ -18,6 +18,20 @@ from utilidades import *
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
+def quitar_fondo_blanco(img, threshold=245):
+    """
+    Convierte los píxeles blancos o muy cercanos al blanco en transparentes.
+    """
+    img = img.convert("RGBA")
+    pixdata = img.load()
+    width, height = img.size
+    for y in range(height):
+        for x in range(width):
+            r, g, b, a = pixdata[x, y]
+            if r >= threshold and g >= threshold and b >= threshold:
+                pixdata[x, y] = (r, g, b, 0)
+    return img
+
 class Interfaz:
 
     def __init__(self):
@@ -152,7 +166,9 @@ class Interfaz:
             # Cargar y pegar la foto del producto en la pantalla (izquierda)
             if img_path and os.path.exists(img_path):
                 try:
-                    p_img = Image.open(img_path).convert("RGBA")
+                    p_img = Image.open(img_path)
+                    # Quitar fondo blanco dinámicamente
+                    p_img = quitar_fondo_blanco(p_img)
                     # Recortar bordes transparentes para centrado exacto
                     bbox = p_img.getbbox()
                     if bbox:
@@ -217,7 +233,9 @@ class Interfaz:
             img_path = info.get("imagen", "")
             if img_path and os.path.exists(img_path):
                 try:
-                    plate_img = Image.open(img_path).convert("RGBA")
+                    plate_img = Image.open(img_path)
+                    # Quitar fondo blanco dinámicamente
+                    plate_img = quitar_fondo_blanco(plate_img)
                     # Recortar bordes transparentes
                     bbox = plate_img.getbbox()
                     if bbox:

@@ -52,19 +52,6 @@ if "total" not in st.session_state:
     st.session_state.total = 0.0
 if "canal" not in st.session_state:
     st.session_state.canal = "Minorista"
-def quitar_fondo_blanco(img, threshold=245):
-    """
-    Convierte los píxeles blancos o muy cercanos al blanco en transparentes.
-    """
-    img = img.convert("RGBA")
-    pixdata = img.load()
-    width, height = img.size
-    for y in range(height):
-        for x in range(width):
-            r, g, b, a = pixdata[x, y]
-            if r >= threshold and g >= threshold and b >= threshold:
-                pixdata[x, y] = (r, g, b, 0)
-    return img
 
 # Función de renderizado de imagen de la balanza
 def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conectado=True):
@@ -126,8 +113,7 @@ def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conec
         # Pegar foto del producto en pantalla (izquierda)
         if img_path and os.path.exists(img_path):
             try:
-                p_img = Image.open(img_path)
-                p_img = quitar_fondo_blanco(p_img)
+                p_img = Image.open(img_path).convert("RGBA")
                 bbox = p_img.getbbox()
                 if bbox:
                     p_img = p_img.crop(bbox)
@@ -190,8 +176,7 @@ def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conec
         img_path = os.path.join(BASE_DIR, img_filename)
         if img_path and os.path.exists(img_path):
             try:
-                plate_img = Image.open(img_path)
-                plate_img = quitar_fondo_blanco(plate_img)
+                plate_img = Image.open(img_path).convert("RGBA")
                 bbox = plate_img.getbbox()
                 if bbox:
                     plate_img = plate_img.crop(bbox)

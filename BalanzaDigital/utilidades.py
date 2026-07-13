@@ -31,13 +31,13 @@ def crear_archivo():
 
     if not os.path.exists(ARCHIVO):
         df = pd.DataFrame(columns=columnas)
-        df.to_csv(ARCHIVO, index=False)
+        df.to_csv(ARCHIVO, index=False, sep=";")
     else:
         try:
-            df = pd.read_csv(ARCHIVO)
+            df = pd.read_csv(ARCHIVO, sep=";")
             if "Productos" not in df.columns:
                 df_new = pd.DataFrame(columns=columnas)
-                df_new.to_csv(ARCHIVO, index=False)
+                df_new.to_csv(ARCHIVO, index=False, sep=";")
         except Exception as e:
             print(f"Error al verificar/migrar CSV: {e}")
 
@@ -91,7 +91,7 @@ def registrar_venta(
 
     current_day = datetime.now().strftime("%d/%m/%Y")
     
-    df = pd.read_csv(ARCHIVO)
+    df = pd.read_csv(ARCHIVO, sep=";")
     merged = False
     
     # Buscar si hoy ya existe un registro del mismo producto con la columna contraria vacía
@@ -135,17 +135,17 @@ def registrar_venta(
         }])
         df = pd.concat([df, nueva_venta], ignore_index=True)
         
-    df.to_csv(ARCHIVO, index=False)
+    df.to_csv(ARCHIVO, index=False, sep=";")
 
 
 def obtener_historial():
     crear_archivo()
-    return pd.read_csv(ARCHIVO)
+    return pd.read_csv(ARCHIVO, sep=";")
 
 
 def ultima_venta():
     crear_archivo()
-    historial = pd.read_csv(ARCHIVO)
+    historial = pd.read_csv(ARCHIVO, sep=";")
 
     if len(historial) == 0:
         return None

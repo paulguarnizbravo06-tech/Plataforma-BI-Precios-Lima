@@ -171,11 +171,11 @@ def enviar_datos_supabase(db_url):
         return False, "No hay datos locales para enviar."
         
     try:
-        # Reemplazar postgresql:// o postgres:// con postgresql+pg8000:// para usar pg8000
-        if db_url.startswith("postgresql://"):
-            db_url = db_url.replace("postgresql://", "postgresql+pg8000://", 1)
-        elif db_url.startswith("postgres://"):
-            db_url = db_url.replace("postgres://", "postgresql+pg8000://", 1)
+        # Reemplazar cualquier variante de postgresql/psycopg2 con pg8000
+        for prefix in ["postgresql+psycopg2://", "postgresql://", "postgres://"]:
+            if db_url.startswith(prefix):
+                db_url = db_url.replace(prefix, "postgresql+pg8000://", 1)
+                break
             
         import ssl
         ssl_context = ssl.create_default_context()

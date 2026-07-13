@@ -64,8 +64,8 @@ def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conec
     img = base_img.copy()
     draw = ImageDraw.Draw(img)
     
-    x_min, x_max = 245, 955
-    y_min, y_max = 115, 560
+    x_min, x_max = 252, 948
+    y_min, y_max = 120, 552
     x_mid = 560
     
     # Fondos
@@ -77,21 +77,24 @@ def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conec
     draw.line([(x_mid, y_min), (x_mid, y_max)], fill="#cbd5e1", width=2)
     
     # Cargar fuentes
+    f_reg = os.path.join(BASE_DIR, "arial.ttf")
+    f_bold = os.path.join(BASE_DIR, "arialbd.ttf")
+    
     try:
-        font_title = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 26)
-        font_label = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 16)
-        font_label_bold = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 16)
-        font_digital_lg = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", 64)
-        font_digital_sm = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", 28)
-        font_digital_lbl = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 14)
+        font_title = ImageFont.truetype(f_bold, 30)
+        font_label = ImageFont.truetype(f_reg, 16)
+        font_label_bold = ImageFont.truetype(f_bold, 18)
+        font_digital_lg = ImageFont.truetype(f_bold, 68)
+        font_digital_sm = ImageFont.truetype(f_bold, 30)
+        font_digital_lbl = ImageFont.truetype(f_reg, 14)
     except Exception:
         try:
-            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 26)
-            font_label = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16)
-            font_label_bold = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 16)
-            font_digital_lg = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf", 60)
-            font_digital_sm = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 26)
-            font_digital_lbl = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
+            font_title = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 30)
+            font_label = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 16)
+            font_label_bold = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 18)
+            font_digital_lg = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 68)
+            font_digital_sm = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 30)
+            font_digital_lbl = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 14)
         except Exception:
             font_title = ImageFont.load_default()
             font_label = ImageFont.load_default()
@@ -124,11 +127,11 @@ def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conec
                 pass
                 
         # Textos de producto
-        draw.text((270, 360), nombre.upper(), fill="#0f172a", font=font_title)
-        draw.text((270, 410), "Categoría:", fill="#64748b", font=font_label)
-        draw.text((270, 430), categoria, fill="#1e293b", font=font_label_bold)
+        draw.text((270, 340), nombre.upper(), fill="#0f172a", font=font_title)
+        draw.text((270, 395), "Categoría:", fill="#64748b", font=font_label)
+        draw.text((270, 420), categoria, fill="#1e293b", font=font_label_bold)
         draw.text((270, 480), "Código:", fill="#64748b", font=font_label)
-        draw.text((345, 480), codigo, fill="#0f172a", font=font_label_bold)
+        draw.text((365, 480), codigo, fill="#0f172a", font=font_label_bold)
         
     # Pegar icono WiFi
     if conectado and os.path.exists(wifi_img_path):
@@ -158,15 +161,15 @@ def generar_imagen_pantalla(peso, precio, total, producto, canal, mercado, conec
     draw.text((590, 355), precio_str, fill="#06b6d4", font=font_digital_sm)
     
     # Total
-    draw.text((760, 335), "TOTAL A PAGAR", fill="#94a3b8", font=font_digital_lbl)
+    draw.text((750, 335), "TOTAL A PAGAR", fill="#94a3b8", font=font_digital_lbl)
     total_str = f"S/. {total:.2f}"
-    draw.text((760, 355), total_str, fill="#fb923c", font=font_digital_sm)
+    draw.text((750, 355), total_str, fill="#fb923c", font=font_digital_sm)
     
     # Conexión y Canal
     draw.text((590, 500), "🟢 IoT ONLINE", fill="#10b981", font=font_label_bold)
     canal_text = f"CANAL: {canal.upper()}"
     canal_color = "#38bdf8" if canal == "Minorista" else "#a78bfa"
-    draw.text((760, 500), canal_text, fill=canal_color, font=font_label_bold)
+    draw.text((750, 500), canal_text, fill=canal_color, font=font_label_bold)
     
     # Pegar producto en bandeja física de la balanza
     if info:

@@ -64,30 +64,45 @@ class Interfaz:
         img = self.base_img.copy()
         draw = ImageDraw.Draw(img)
         
-        # Coordenadas de la pantalla física en balanza.png
-        x_min, x_max = 245, 955
-        y_min, y_max = 115, 560
+        # Coordenadas ajustadas para no salirse de la pantalla física en balanza.png
+        x_min, x_max = 252, 948
+        y_min, y_max = 120, 552
         x_mid = 560
         
-        # Cargar fuentes del sistema
+        # Cargar fuentes desde el directorio local para consistencia en la nube
+        import os
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        f_reg = os.path.join(BASE_DIR, "arial.ttf")
+        f_bold = os.path.join(BASE_DIR, "arialbd.ttf")
+        
         try:
-            font_title = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 26) # Nombre producto
-            font_label = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 16)   # Etiquetas secundarias
-            font_label_bold = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 16) # Contenido secundario negrita
-            font_digital_lg = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", 64) # Peso digital grande
-            font_digital_sm = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", 28) # Precios digital mediano
-            font_digital_lbl = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 14)  # Etiquetas pantalla digital
-            font_drag_lg = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 34)   # Texto de arrastrar grande
-            font_drag_sm = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 18)     # Texto de arrastrar chico
+            font_title = ImageFont.truetype(f_bold, 30) # Nombre producto
+            font_label = ImageFont.truetype(f_reg, 16)   # Etiquetas secundarias
+            font_label_bold = ImageFont.truetype(f_bold, 18) # Contenido secundario negrita
+            font_digital_lg = ImageFont.truetype(f_bold, 68) # Peso digital grande
+            font_digital_sm = ImageFont.truetype(f_bold, 30) # Precios digital mediano
+            font_digital_lbl = ImageFont.truetype(f_reg, 14)  # Etiquetas pantalla digital
+            font_drag_lg = ImageFont.truetype(f_bold, 36)   # Texto de arrastrar grande
+            font_drag_sm = ImageFont.truetype(f_reg, 20)     # Texto de arrastrar chico
         except Exception as e:
-            font_title = ImageFont.load_default()
-            font_label = ImageFont.load_default()
-            font_label_bold = ImageFont.load_default()
-            font_digital_lg = ImageFont.load_default()
-            font_digital_sm = ImageFont.load_default()
-            font_digital_lbl = ImageFont.load_default()
-            font_drag_lg = ImageFont.load_default()
-            font_drag_sm = ImageFont.load_default()
+            try:
+                font_title = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 30)
+                font_label = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 16)
+                font_label_bold = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 18)
+                font_digital_lg = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 68)
+                font_digital_sm = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 30)
+                font_digital_lbl = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 14)
+                font_drag_lg = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 36)
+                font_drag_sm = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 20)
+            except Exception:
+                font_title = ImageFont.load_default()
+                font_label = ImageFont.load_default()
+                font_label_bold = ImageFont.load_default()
+                font_digital_lg = ImageFont.load_default()
+                font_digital_sm = ImageFont.load_default()
+                font_digital_lbl = ImageFont.load_default()
+                font_drag_lg = ImageFont.load_default()
+                font_drag_sm = ImageFont.load_default()
 
         # --- CASO A: ARRASTRANDO UN PRODUCTO (MOSTRAR TARGET DE DROP) ---
         if self.arrastrando:
@@ -147,11 +162,11 @@ class Interfaz:
                     print(f"Error al cargar la imagen del producto en pantalla: {ex}")
             
             # Textos del producto
-            draw.text((270, 360), nombre.upper(), fill="#0f172a", font=font_title)
-            draw.text((270, 410), "Categoría:", fill="#64748b", font=font_label)
-            draw.text((270, 430), categoria, fill="#1e293b", font=font_label_bold)
+            draw.text((270, 340), nombre.upper(), fill="#0f172a", font=font_title)
+            draw.text((270, 395), "Categoría:", fill="#64748b", font=font_label)
+            draw.text((270, 420), categoria, fill="#1e293b", font=font_label_bold)
             draw.text((270, 480), "Código:", fill="#64748b", font=font_label)
-            draw.text((345, 480), codigo, fill="#0f172a", font=font_label_bold)
+            draw.text((365, 480), codigo, fill="#0f172a", font=font_label_bold)
             
         # Pegar icono WiFi en la esquina
         if conectado and os.path.exists("iconos/wifi.png"):
